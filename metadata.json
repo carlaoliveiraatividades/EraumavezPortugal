@@ -1,0 +1,6 @@
+{
+  "name": "História de Portugal para Crianças",
+  "description": "Um portal educativo e interativo sobre a riquíssima História de Portugal, com jogos, mapas ilustrados, conquistas e conversas com personagens históricas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
