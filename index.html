@@ -1,13 +1,1689 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Era uma Vez... Portugal - História de Portugal para Crianças</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Era uma vez Portugal... | Viagem Ilustrada para Crianças</title>
+    <!-- Google Fonts & Tailwind -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        serif: ["Playfair Display", "serif"],
+                        mono: ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.15); opacity: 0.9; }
+        }
+        .float-anim { animation: float 4s ease-in-out infinite; }
+        .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #FFD93D; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-[#FFFBEB] text-[#2D3436] font-sans min-h-screen flex flex-col justify-between selection:bg-amber-200">
 
+    <!-- Top HUD Banner -->
+    <header class="bg-white border-b-6 border-[#FFD93D] sticky top-0 z-50 shadow-sm px-4 py-3 md:py-4 rounded-b-[28px] mx-0 md:mx-4 mt-0 md:mt-2">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-[#DA291C] rounded-full flex items-center justify-center text-2xl shadow-md border-2 border-white shrink-0 float-anim">🏰</div>
+                <div class="text-center sm:text-left">
+                    <h1 class="text-lg md:text-xl font-black text-[#046A38] tracking-tight flex items-center justify-center sm:justify-start gap-1">
+                        Era uma vez <span class="text-[#DA291C]">Portugal...</span>
+                        <span class="text-[#FFD93D] animate-pulse">✨</span>
+                    </h1>
+                    <span class="text-[9px] md:text-xs font-bold text-slate-400 block tracking-wide uppercase mt-0.5">Viagem Ilustrada & Quiz de História</span>
+                </div>
+            </div>
+
+            <!-- Bento HUD Progress Panel -->
+            <div class="flex items-center gap-3.5 bg-white border-3 border-[#86EFAC] rounded-2xl px-4 py-1.5 shadow-sm">
+                <div class="text-center">
+                    <span class="text-[8px] font-black uppercase text-slate-400 tracking-wider">Grau Real</span>
+                    <p id="hud-level-title" class="text-[11px] font-black text-[#046A38] leading-none mt-0.5">Grão-Vassalo</p>
+                </div>
+                <div class="w-0.5 h-5 bg-slate-200 rounded-full"></div>
+                <div class="text-center">
+                    <span class="text-[8px] font-black uppercase text-slate-400 tracking-wider">Nível</span>
+                    <p id="hud-level-num" class="text-xs font-black text-[#DA291C] leading-none mt-0.5">1</p>
+                </div>
+                <div class="w-0.5 h-5 bg-slate-200 rounded-full"></div>
+                <div class="flex items-center gap-1 font-bold">
+                    <span class="text-sm">🪙</span>
+                    <span id="hud-xp-points" class="text-xs font-black text-[#046A38]">0 XP</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Viewport Context -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 py-6 md:py-8" id="viewport">
+        <!-- Dyn contents loaded here -->
+    </main>
+
+    <!-- Navigation Hub Dock bar -->
+    <nav class="bg-white border-t-6 border-[#FFD93D] py-3 px-4 bottom-0 sticky z-40 shadow-lg rounded-t-[28px] mx-0 md:mx-4 mb-0 md:mb-2 select-none">
+        <div class="max-w-xl mx-auto flex justify-between items-center gap-2">
+            <button onclick="changeTab('timeline')" id="nav-timeline" class="flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all">
+                <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-[9px] font-black mt-1">Linha do Tempo</span>
+            </button>
+            <button onclick="changeTab('map')" id="nav-map" class="flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all">
+                <i data-lucide="map" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-[9px] font-black mt-1">Tempo e Mapa</span>
+            </button>
+            <button onclick="changeTab('chat')" id="nav-chat" class="flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all">
+                <i data-lucide="message-square" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-[9px] font-black mt-1">Falar com Heróis</span>
+            </button>
+            <button onclick="changeTab('games')" id="nav-games" class="flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all">
+                <i data-lucide="compass" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-[9px] font-black mt-1">Jogar e Quiz</span>
+            </button>
+            <button onclick="changeTab('rewards')" id="nav-rewards" class="flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all">
+                <i data-lucide="trophy" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-[9px] font-black mt-1">Recompensas</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- CORE DATA & LOGIC SCRIPTS -->
+    <script>
+        // Data declarations
+        const HISTORICAL_ERAS = [
+            {
+                id: "fundacao",
+                title: "Fundação de Portugal",
+                century: "Século XII",
+                years: "1128 - 1249",
+                badge: "🏰 Berço da Nação",
+                description: "É aqui que tudo começa! O jovem D. Afonso Henriques zanga-se com a mãe na Batalha de São Mamede e decide criar um país novinho em folha. Com muita coragem e batalhas heroicas, tornou-se o nosso primeiro Rei!",
+                funFact: "Sabias que D. Afonso Henriques era conhecido como 'O Conquistador' e dizia-se que era tão alto e forte que a sua espada pesava mais do que qualquer outro cavaleiro conseguia levantar?",
+                color: "bg-amber-50 border-amber-200 text-amber-900",
+                events: [
+                    { year: "1128", title: "Batalha de São Mamede", desc: "D. Afonso Henriques lidera os barões contra as tropas da própria mãe, D. Teresa, assumindo o Condado.", icon: "⚔️" },
+                    { year: "1139", title: "Batalha de Ourique", desc: "Vença uma histórica contenda contra cinco reis mouros poderosos. Os soldados aclamam-no como Rei!", icon: "🛡️" },
+                    { year: "1143", title: "Tratado de Zamora", desc: "O reino vizinho aceita formalmente que Portugal é um reino independente e livre.", icon: "📜" },
+                    { year: "1147", title: "Conquista de Lisboa", desc: "Com ajuda dos fiéis cavaleiros cruzados, D. Afonso Henriques conquista o Castelo de São Jorge.", icon: "🏰" },
+                    { year: "1249", title: "Conquista do Algarve", desc: "D. Afonso III conquista Faro e Silves, terminando a reconquista e desenhando as fronteiras de hoje.", icon: "🌅" }
+                ],
+                figures: [
+                    { name: "D. Afonso Henriques", role: "O Primeiro Rei", bio: "Nasceu em Guimarães e lutou a vida toda pela independência nacional com o escudo das quinas azuis.", icon: "👑" },
+                    { name: "D. Dinis", role: "O Rei Poeta e Lavrador", bio: "Fundou a Universidade de Coimbra, plantou o Pinhal de Leiria e inventou lindas cantigas de amor.", icon: "✍️" },
+                    { name: "Rainha Santa Isabel", role: "A Santa do Milagre", bio: "Famosa pela sua tremenda bondade. Diz a lenda que converteu moedas de ouro em formosas rosas.", icon: "🌹" }
+                ]
+            },
+            {
+                id: "descobrimentos",
+                title: "A Era dos Descobrimentos",
+                century: "Séculos XV - XVI",
+                years: "1415 - 1580",
+                badge: "⛵ Navegadores dos Mares",
+                description: "Os portugueses construíram caravelas de madeira e partiram à aventura por mares nunca antes navegados! Enfrentaram tempestades e monstros para conhecer e trazer especiarias lendárias.",
+                funFact: "Os marinheiros na caravela alimentavam-se de biscoitos duros como pedra, tendo de molhá-los na sopa líquida para os conseguir mastigar!",
+                color: "bg-sky-50 border-sky-200 text-sky-900",
+                events: [
+                    { year: "1415", title: "Conquista de Ceuta", desc: "Portugal toma a praça no norte de África, marcando o início oficial da expansão marítima.", icon: "⚔️" },
+                    { year: "1419", title: "Descoberta das Ilhas", desc: "Zarco chega à Ilha da Madeira, e logo depois Diogo de Silves encontra o arquipélago dos Açores.", icon: "🏝️" },
+                    { year: "1488", title: "Dobrar o Cabo Marítimo", desc: "Bartolomeu Dias dobra o tempestuoso Cabo das Tormentas, rebatizado de Cabo da Boa Esperança.", icon: "🌊" },
+                    { year: "1498", title: "Vasco da Gama na Índia", desc: "O destemido almirante guia navios até Calecute por mar, abrindo a rota comercial do Oriente.", icon: "🍛" },
+                    { year: "1500", title: "Brasil à Vista!", desc: "Pedro Álvares Cabral afasta-se no Atlântico e descobre a paradisíaca Terra de Santa Cruz.", icon: "🌴" }
+                ],
+                figures: [
+                    { name: "Infante D. Henrique", role: "O Organizador", bio: "Cérebro que planeava e reunia os cientistas e mapas na Fortaleza sagrada de Sagres.", icon: "🗺️" },
+                    { name: "Vasco da Gama", role: "Almirante da Índia", bio: "Superou tempestades terríveis para abrir o maior caminho comercial de especiarias do mundo.", icon: "⚓" },
+                    { name: "Luís de Camões", role: "O Maior Poeta", bio: "Escreveu 'Os Lusíadas'. Perdeu um olho em batalha e salvou os escritos nadando no naufrágio.", icon: "👁️" }
+                ]
+            },
+            {
+                id: "crise_restauracao",
+                title: "Reis Filipes & Restauração",
+                century: "Século XVII",
+                years: "1578 - 1755",
+                badge: "⚔️ Renascer do Reino",
+                description: "O jovem rei D. Sebastião desaparece no deserto de África e Portugal perde a coroa para Espanha. Mas 60 anos depois, os portugueses unem-se e reclamam a liberdade!",
+                funFact: "Ainda hoje os portugueses dizem que estão 'à espera de D. Sebastião numa manhã de nevoeiro' quando aguardam um milagre difícil!",
+                color: "bg-rose-50 border-rose-200 text-rose-900",
+                events: [
+                    { year: "1578", title: "Batalha de Alcácer Quibir", desc: "D. Sebastião combate em Marrocos e desaparece na batalha, deixando o trono sem herdeiros.", icon: "🐎" },
+                    { year: "1580", title: "União Ibérica", desc: "O rei Filipe II de Espanha reclama o trono. Durante 60 anos, há apenas um monarca ibérico.", icon: "🏰" },
+                    { year: "1640", title: "Restauração da Independência", desc: "No dia 1 de Dezembro, nobres portugueses aclamam o Duque de Bragança como legítimo rei D. João IV.", icon: "🎺" },
+                    { year: "1755", title: "O Terramoto de Lisboa", desc: "Um gigantesco abalo destrói Lisboa em pleno feriado, seguido de um maremoto e incêndios.", icon: "🌋" },
+                    { year: "1756", title: "A Reconstrução Pombalina", desc: "Marquês de Pombal comanda a reconstrução da Baixa de Lisboa com as sismo-resistentes gaiolas de madeira.", icon: "📐" }
+                ],
+                figures: [
+                    { name: "D. Sebastião", role: "O Desejado", bio: "Rei menino que sumiu nas dunas quentes e alimentou a lendária crença do seu regresso patriótico.", icon: "🛡️" },
+                    { name: "D. João IV", role: "O Restaurador", bio: "Duque de Bragança que assumiu a pesada coroa devolvendo a liberdade integral à bandeira lusa.", icon: "👑" },
+                    { name: "Marquês de Pombal", role: "O Reformador", bio: "Prático primeiro-ministro que ergueu das cinzas a Lisboa Pombalina do Iluminismo.", icon: "🏛️" }
+                ]
+            },
+            {
+                id: "revolucao_republica",
+                title: "Comboio & República",
+                century: "Século XIX - XX",
+                years: "1856 - 1910",
+                badge: "🚂 O Progresso Social",
+                description: "Portugal modernizou-se! Chegaram os primeiros comboios a vapor, instalaram-se as linhas de telégrafo e construíram-se pontes de ferro. E em 1910 nasce a República!",
+                funFact: "A primeira viagem de comboio em Portugal, em 1856, deixou as pessoas apavoradas com a 'terrível' velocidade de 30 km/h!",
+                color: "bg-emerald-50 border-emerald-200 text-emerald-900",
+                events: [
+                    { year: "1807", title: "Invasões Francesas", desc: "Tropas de Napoleão entram no país. A Corte foge para o Brasil para salvaguardar a nação.", icon: "⚔️" },
+                    { year: "1856", title: "Inauguração do Comboio", desc: "D. Pedro V abre a primeira linha ferroviária de Lisboa ao Carregado, trazendo progresso.", icon: "🚂" },
+                    { year: "1890", title: "O Ultimato Britânico", desc: "Inglaterra exige que Portugal recue os seus planos do Mapa Cor-de-Rosa nas colónias.", icon: "🗺️" },
+                    { year: "1910", title: "Implantação da República", desc: "O povo uniu-se no dia 5 de Outubro para colocar fim à Monarquia e declarar a nova República.", icon: "🚩" }
+                ],
+                figures: [
+                    { name: "Rainha D. Maria II", role: "A Educadora", bio: "Rainha que amava o ensino e impulsionou as primeiras escolas básicas nacionais para o povo.", icon: "👑" },
+                    { name: "Fontes Pereira de Melo", role: "O Engenheiro", bio: "Grande obreiro que cobriu Portugal de estradas modernas, telégrafos e linhas férreas.", icon: "🛠️" },
+                    { name: "Fernando Pessoa", role: "O Poeta dos Mil Nomes", bio: "Génio da escrita que escrevia inventando poetas com alma própria, os heterónimos.", icon: "🎩" }
+                ]
+            },
+            {
+                id: "democracia",
+                title: "Revolução dos Cravos",
+                century: "Século XX - XXI",
+                years: "1974 - Hoje",
+                badge: "🕊️ Liberdade de Pensar",
+                description: "Após anos duros de uma ditadura com censura, os canos das armas dos jovens soldados encheram-se de cravos vermelhos! O 25 de Abril trouxe de volta o riso e a canção livre.",
+                funFact: "A senha secreta transmitida na rádio nacional para arrancar a revolução foi a canção censurada 'Grândola, Vila Morena'!",
+                color: "bg-purple-50 border-purple-200 text-purple-900",
+                events: [
+                    { year: "1933", title: "O Estado Novo", desc: "António de Oliveira Salazar inaugura um rígido regime sem eleições democráticas ou livre expressão.", icon: "🤫" },
+                    { year: "1974", title: "25 de Abril", desc: "Militares revoltam-se pacificamente. Celeste oferece cravos e o povo celebra o fim da censura.", icon: "🌺" },
+                    { year: "1986", title: "Adesão à União Europeia", desc: "Portugal integra a família democrática europeia, recebendo fundos para autoestradas e progresso.", icon: "🇪🇺" },
+                    { year: "1998", title: "Expo 98 e Nobel", desc: "Lisboa acolhe a exposição mundial dos oceanos e José Saramago conquista o Nobel da Literatura.", icon: "🐋" }
+                ],
+                figures: [
+                    { name: "Amália Rodrigues", role: "Diva do Fado", bio: "A maravilhosa voz profunda que passeou e celebrou a saudade lusa em todos os palcos mundiais.", icon: "🎤" },
+                    { name: "Salgueiro Maia", role: "Capitão do Povo", bio: "Destemido capitão da revolução pacífica que tomou a capital de cravo na lapela e sem sangue.", icon: "⭐" },
+                    { name: "José Saramago", role: "Nobel da Escrita", bio: "Primeiro autor de língua portuguesa a erguer o selo de nobel com sagazes e fantásticos livros.", icon: "👓" }
+                ]
+            }
+        ];
+
+        const HISTORICAL_CHARACTERS = [
+            { key: "afonso_henriques", name: "D. Afonso Henriques", title: "O Conquistador e Primeiro Rei", eraId: "fundacao", avatar: "👑", color: "from-amber-400 to-yellow-600", accentBg: "bg-amber-100", greeting: "Saudações, jovem fidalgo! Eu sou D. Afonso Henriques, o primeiro Rei de Portugal! Estás pronto para defender as muralhas do nosso reino?", bio: "Nasci em Guimarães e lutei intrépido para mudar o Condado a país livre. Com o meu escudo de cinco quinas azuis e a minha pesada espada, firmei a pátria!", funTrivia: "Diz-se que a minha força vinha das montanhas de Guimarães e que a minha espada pesava mais do que qualquer outro cavaleiro aguentava!" },
+            { key: "camoes", name: "Luís de Camões", title: "O Poeta dos Navegadores", eraId: "descobrimentos", avatar: "👁️", color: "from-sky-400 to-blue-600", accentBg: "bg-sky-100", greeting: "Olá, jovem bardo das rimas alegres! Abre a imaginação a ventos e monstros! Sou Luís de Camões, o teu servo das letras!", bio: "Naveguei pelo mundo todo! Perdi o olho direito lutando em África e sobrevivi a um naufrágio tenebroso onde nadei com um só braço erguendo 'Os Lusíadas'!", funTrivia: "Consigo rimar qualquer palavra e adoro rir na cara de monstros com o sopro de uma boa caneta!" },
+            { key: "vasco_da_gama", name: "Vasco da Gama", title: "O Almirante do Mar Índico", eraId: "descobrimentos", avatar: "⚓", color: "from-cyan-400 to-indigo-600", accentBg: "bg-cyan-100", greeting: "Ahoy, pequeno marinheiro! Eu sou Vasco da Gama! Sentes o aroma a pimenta no ar? Iça as velas para desbravar perigos nunca dantes vistos!", bio: "Fui o temerário capitão indicado pelo Rei para guiar a frota de caravelas até à fabulosa Índia. Dobrámos tormentas para vencer o caminho!", funTrivia: "O meu mapa era desenhado à mão sobre pele de ovelha e o meu melhor guia marítimo eram as estrelas de noite!" },
+            { key: "maria_ii", name: "Rainha D. Maria II", title: "A Educadora e Rainha", eraId: "revolucao_republica", avatar: "👵", color: "from-emerald-400 to-teal-600", accentBg: "bg-emerald-100", greeting: "Sejas bem-vindo, jovem cientista do saber! Sou a Rainha D. Maria II. Despacha a preguiça e partilha comigo o gosto pela leitura!", bio: "Subi ao trono num tempo de discórdia, mas dediquei-me com amor a modernizar o reino. Abri as primeiras escolas primárias para ensinar as crianças!", funTrivia: "Fui coroada com tenros 15 anos e o meu legado inaugurou o primeiro comboio a vapor de ferro!" },
+            { key: "fernando_pessoa", name: "Fernando Pessoa", title: "O Poeta das Mil Almas", eraId: "revolucao_republica", avatar: "🎩", color: "from-purple-400 to-violet-600", accentBg: "bg-purple-100", greeting: "Boa tarde, pequeno sonhador! Sou o Fernando Pessoa, ou Álvaro de Campos, ou Ricardo Reis... Quem desejas que eu seja na caneta hoje?", bio: "Criei outros escritores falsos chamados heterónimos. Cada um de nós tinha estilo de pensar, caligrafias e biografias totalmente originais!", funTrivia: "Adoro tomar café na Baixa de Lisboa enquanto invento mundos profundos e os copio para pequenos papéis!" }
+        ];
+
+        const MAP_HOTSPOTS = [
+            { id: "guimaraes", name: "Guimarães", x: 43, y: 18, title: "Guimarães, Berço de Portugal", description: "O belíssimo ponto de nascimento da nação! No Castelo medieval de Guimarães encontras o orgulhoso letreiro esculpido 'Aqui Nasceu Portugal'.", fact: "Em 1128, a Batalha de São Mamede deu a D. Afonso Henriques as chaves do Condado.", color: "bg-amber-500" },
+            { id: "porto", name: "Porto", x: 40, y: 24, title: "O Porto da Invicta", description: "Bravíssima cidade costeira que deu o próprio nome a Portugal (Portus Cale) e resistiu a cercos inimigos com glória.", fact: "Aqui nasceram os barcos rabelos que carregavam pipas de vinho sobre o Douro.", color: "bg-teal-500" },
+            { id: "coimbra", name: "Coimbra", x: 45, y: 45, title: "Coimbra dos Estudantes", description: "Segunda capital histórica. O rei D. Dinis inaugurou aqui a primeira Universidade em 1290, famosa pela magnífica biblioteca guardada.", fact: "Pequenos morcegos amigáveis guardam os livros comendo todos os insetos nocivos à noite!", color: "bg-purple-500" },
+            { id: "lisboa", name: "Lisboa", x: 32, y: 68, title: "Lisboa dos Descobrimentos", description: "Conquistada por D. Afonso, tornou-se porto colossal de partida marítima para todo o globo e capital do império.", fact: "Em Belém podes visitar a icónica Torre e lamber os divinais pastéis de nata tradicionais.", color: "bg-sky-500" },
+            { id: "sagres", name: "Sagres de Sagrada Escola", x: 27, y: 92, title: "Sagres do Fim do Mundo", description: "Ponto geográfico escarpado onde o Infante juntava cartógrafos e construía frotas para desbravar monstros.", fact: "Pensava-se que logo a seguir ao cabo as águas ferviam e o mundo caía num penhasco sombrio!", color: "bg-rose-500" },
+            { id: "ourique", name: "Ourique", x: 42, y: 80, title: "Ourique dos Cinco Reis", description: "Diz a história que aqui D. Afonso obteve uma vitória miraculosa face a poderosos exércitos mouros com as suas forças escassas.", fact: "Após vencer, os soldados ergueram o primeiro rei nos escudos sagrando a fundação nacional.", color: "bg-emerald-500" }
+        ];
+
+        const QUIZ_QUESTIONS = [
+            { id: "q_fund_1", eraId: "fundacao", question: "Quem foi o primeiríssimo Rei de Portugal?", options: ["D. Dinis", "D. Afonso Henriques", "D. Sebastião", "Filipe I"], correctAnswer: 1, explanation: "D. Afonso Henriques conquistou a soberania lusa com imensa valentia e tornou-se o primeiro rei em 1139!" },
+            { id: "q_fund_2", eraId: "fundacao", question: "Onde se proclama que 'Nasceu Portugal'?", options: ["Lisboa", "Faro", "Guimarães", "Coimbra"], correctAnswer: 2, explanation: "Guimarães é apelidada de Cidade Berço, o assento de nascença da dinastia e da Batalha pioneira!" },
+            { id: "q_fund_3", eraId: "fundacao", question: "O que a Rainha Santa Isabel converteu em rosas no seu milagre?", options: ["Espadas", "Uvas doces", "Moedas de ouro e pão", "Peixe frito"], correctAnswer: 2, explanation: "Ao ser indagada pelo rei o que carregava, ela soltou o avental: apareceram formosas rosas vermelhas silvestres!" },
+            
+            { id: "q_desc_1", eraId: "descobrimentos", question: "Que barcos de velas triangulares inventaram para bolinar contra ventos?", options: ["Submarinos", "Canoas", "Iates", "Caravelas"], correctAnswer: 3, explanation: "As caravelas contavam com velame especial triangular que lhes facultava marear mesmo contra as rajadas!" },
+            { id: "q_desc_2", eraId: "descobrimentos", question: "Quem rumou até à Índia pelo mar em 1498 trazendo pimenta e canela?", options: ["D. Afonso", "Vasco da Gama", "Cabral", "Camões"], correctAnswer: 1, explanation: "Vasco da Gama pilotou a destemida frota em dois conturbados anos de navegação contornando as praias de África." },
+            { id: "q_desc_3", eraId: "descobrimentos", question: "Qual o livro do poeta Camões que louva as epopeias das Descobertas?", options: ["A Selva", "Os Lusíadas", "O Principezinho", "Histórias Curiosas"], correctAnswer: 1, explanation: "A obra 'Os Lusíadas' é o marco épico português dedicado às glórias dos corajosos heróis marinheiros." },
+            
+            { id: "q_rest_1", eraId: "crise_restauracao", question: "Qual o jovem rei desaparecido nas dunas de Marrocos sob nevoeiro?", options: ["D. Sebastião", "D. João IV", "D. Dinis", "D. Pedro"], correctAnswer: 0, explanation: "O rei-menino sumiu na Batalha de Alcácer Quibir em 1578, alimentando o mito patriótico de retornar vitorioso." },
+            { id: "q_rest_2", eraId: "crise_restauracao", question: "Que feriado assinala a libertação da tutela espanhola em 1640?", options: ["Dia do Chouriço", "Dia da Restauração nacional", "Dia do Estudante", "Dia Marítimo"], correctAnswer: 1, explanation: "No dia 1 de Dezembro celebramos a Restauração, culminada com a devida coroação de D. João IV." },
+            { id: "q_rest_3", eraId: "crise_restauracao", question: "Como se chama a gaiola flexível inventada para resistir a terramotos?", options: ["Gaiola Pombalina", "Janela Sarda", "Palácio de Cristal", "Castelo de Madeira"], correctAnswer: 0, explanation: "A Gaiola Pombalina era uma rede interior em cruz flexível que bamboleava perante o sismo sem tombar a habitação!" },
+            
+            { id: "q_rep_1", eraId: "revolucao_republica", question: "Em que célebre data assinalamos o advento da República em 1910?", options: ["25 de Abril", "10 de Junho", "5 de Outubro", "1 de Janeiro"], correctAnswer: 2, explanation: "No dia 5 de Outubro foi deposta a monarquia lusa iniciando-se formalmente as dinastias de governos eleitos!" },
+            { id: "q_rep_2", eraId: "revolucao_republica", question: "Que lindas cores enverga hoje a bandeira de Portugal repúblico?", options: ["Azul e Branco", "Verde e Vermelho", "Amarelo e Roxo", "Rosa e Verde"], correctAnswer: 1, explanation: "Bandeira com o selo central das quinas. O verde espelha fé, enquanto o vermelho evoca a enorme bravura popular." },
+            { id: "q_rep_3", eraId: "revolucao_republica", question: "Que nome atribuiu o poeta Fernando Pessoa aos seus nomes autorais?", options: ["Pseudofantasias", "Apelidos", "Heterónimos", "Sóis literários"], correctAnswer: 2, explanation: "Os heterónimos! Escritas ricas onde atribuía caligrafias, filosofias e identidades únicas a cada um dos poetas imaginados." },
+            
+            { id: "q_dem_1", eraId: "democracia", question: "Qual a graciosa flor símbolo da revolução sem pólvora de 1974?", options: ["O Cravo Vermelho", "O Girassol", "A Tulipa", "A Orquídea"], correctAnswer: 0, explanation: "Celeste e o rancho de cravos do 25 de Abril, preenchendo os canos das armas num magnífico canto de paz e liberdade!" },
+            { id: "q_dem_2", eraId: "democracia", question: "Qual o canto do fado consagrado que a diva Amália cantou ao mundo?", options: ["Fado de Coimbra", "O Fado Tradicional", "O Vira do Norte", "Samba Riba"], correctAnswer: 1, explanation: "O Fado Património Imaterial de Lisboa, expressivo e saudoso acompanhado de guitarras lusas formosas." },
+            { id: "q_dem_3", eraId: "democracia", question: "Quem foi o insigne autor português galardoado com o Prémio Nobel em 1998?", options: ["Eça", "Saramago", "Camões", "Antero"], correctAnswer: 1, explanation: "O brilhante mestre José Saramago conquistou a glória literária dourada em Estocolmo com histórias incríveis." }
+        ];
+
+        // State Manager variables
+        const state = {
+            activeTab: "timeline",
+            points: 0,
+            selectedEraId: "fundacao",
+            activeEventIdx: 0,
+            selectedSpot: null,
+            selectedCharKey: "afonso_henriques",
+            chatMessages: {},
+            chatIsLoading: false,
+            apiError: null,
+            isSpeaking: false,
+            
+            activeGame: "quiz",
+            quizSelectedEra: "fundacao",
+            quizCurrentIdx: 0,
+            quizSelectedOption: null,
+            quizIsAnswered: false,
+            quizScore: 0,
+            quizShowSummary: false,
+            
+            oceanStep: 0,
+            oceanHp: 3,
+            oceanIsGameOver: false,
+            oceanIsGameWon: false,
+            oceanLog: "Sais de Belém com as velas cheias! Próximo destino: contornar o temível Cabo da Boa Esperança.",
+            
+            poetryPoemIdx: 0,
+            poetrySelectedWord: null,
+            poetrySolved: false,
+            poetryPointsGiven: false,
+            
+            shieldColor: "bg-[#DA291C] border-[#B45309] text-yellow-300",
+            shieldSymbol: "🛡️",
+            shieldBgLabel: "Vermelho Real",
+            shieldName: "Escudo do Pequeno Cavaleiro"
+        };
+
+        let achievements = [];
+
+        // Save and Load logic via LocalStorage
+        function saveProgress() {
+            try {
+                localStorage.setItem("portugal_hist_points_onefile", String(state.points));
+                localStorage.setItem("portugal_hist_achievements_onefile", JSON.stringify(achievements));
+            } catch (e) {
+                console.warn("Storage save failed:", e);
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const points = localStorage.getItem("portugal_hist_points_onefile");
+                const achs = localStorage.getItem("portugal_hist_achievements_onefile");
+                if (points) state.points = parseInt(points, 10);
+                if (achs) {
+                    achievements = JSON.parse(achs);
+                } else {
+                    resetAchievementsToDefault();
+                }
+            } catch (e) {
+                resetAchievementsToDefault();
+            }
+            updateHUD();
+        }
+
+        function resetAchievementsToDefault() {
+            achievements = [
+                { id: "coroa_afonso", title: "Cavaleiro do Reino", description: "Termina o Quiz da Fundação de Portugal e recebe a coroa de D. Afonso Henriques!", icon: "👑", unlocked: false, points: 100, badgeColor: "bg-amber-500", category: "quiz" },
+                { id: "mestre_caravela", title: "Navegador dos Sete Mares", description: "Ajuda Vasco da Gama a guiar a sua caravela à Índia sem bater nos monstros marinhos!", icon: "⛵", unlocked: false, points: 150, badgeColor: "bg-sky-500", category: "ocean" },
+                { id: "poeta_estrelas", title: "Poeta das Estrelas", description: "Completa o enigma poético e decifra os versos mágicos de Luís de Camões!", icon: "✍️", unlocked: false, points: 100, badgeColor: "bg-purple-500", category: "poetry" },
+                { id: "conversa_imperio", title: "Conversador do Império", description: "Fala com um dos personagens históricos animados e pergunta pelas suas memórias!", icon: "💬", unlocked: false, points: 50, badgeColor: "bg-emerald-500", category: "chat" },
+                { id: "explorador_tempo", title: "Explorador de Séculos", description: "Explora todas as 5 eras na linha do tempo para te tornares um mestre da História!", icon: "⏳", unlocked: false, points: 120, badgeColor: "bg-rose-500", category: "timeline" }
+            ];
+        }
+
+        function addPoints(pts) {
+            state.points += pts;
+            updateHUD();
+            saveProgress();
+        }
+
+        function unlockAchievement(id) {
+            let found = achievements.find(a => a.id === id);
+            if (found && !found.unlocked) {
+                found.unlocked = true;
+                state.points += found.points;
+                playAchievementSound();
+                updateHUD();
+                saveProgress();
+                let notice = document.createElement("div");
+                notice.className = "fixed bottom-24 left-1/2 -translate-x-1/2 bg-amber-500 text-white font-black px-6 py-3 rounded-full shadow-2xl border-4 border-white text-xs z-50 animate-bounce cursor-pointer";
+                notice.innerHTML = `🏆 CONQUISTA REAL: Desbloqueaste "${found.title}" (+${found.points} XP)! VER CABINETE`;
+                notice.onclick = () => { changeTab('rewards'); notice.remove(); };
+                document.body.appendChild(notice);
+                setTimeout(() => notice.remove(), 7000);
+            }
+        }
+
+        function updateHUD() {
+            const currentLevel = Math.floor(state.points / 100) + 1;
+            const levelTitles = ["Grão-Vassalo", "Fidalgo", "Navegador", "Conde", "Duque"];
+            const levelTitleTarget = currentLevel >= 5 ? "Duque" : levelTitles[currentLevel - 1] || "Grão-Vassalo";
+
+            document.getElementById("hud-level-title").innerText = levelTitleTarget;
+            document.getElementById("hud-level-num").innerText = currentLevel;
+            document.getElementById("hud-xp-points").innerText = `${state.points} XP`;
+        }
+
+        // --- SYNCHRONIZED AUDIO ENGINE ---
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtxClass) audioCtx = new AudioCtxClass();
+            }
+            if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playClickSound() {
+            try {
+                const ctx = getAudioContext(); if (!ctx) return;
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc.start(); osc.stop(ctx.currentTime + 0.1);
+            } catch(e) {}
+        }
+
+        function playSuccessSound() {
+            try {
+                const ctx = getAudioContext(); if (!ctx) return;
+                const now = ctx.currentTime;
+                const notes = [523.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0, now + idx * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.1, now + idx * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.14);
+                    osc.start(now + idx * 0.08); osc.stop(now + idx * 0.08 + 0.18);
+                });
+            } catch(e) {}
+        }
+
+        function playFailSound() {
+            try {
+                const ctx = getAudioContext(); if (!ctx) return;
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(170, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc.start(); osc.stop(ctx.currentTime + 0.28);
+            } catch(e) {}
+        }
+
+        function playAchievementSound() {
+            try {
+                const ctx = getAudioContext(); if (!ctx) return;
+                const now = ctx.currentTime;
+                const chord = [261.63, 329.63, 392.00, 523.25];
+                chord.forEach((freq, idx) => {
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.type = "sawtooth";
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    gain.gain.setValueAtTime(0, now + idx * 0.06);
+                    gain.gain.linearRampToValueAtTime(0.06, now + idx * 0.06 + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.06 + 0.28);
+                    osc.start(now + idx * 0.06); osc.stop(now + idx * 0.06 + 0.32);
+                });
+            } catch(e) {}
+        }
+
+        function playWaveSound() {
+            try {
+                const ctx = getAudioContext(); if (!ctx) return;
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.exponentialRampToValueAtTime(170, now + 0.3);
+                osc.frequency.exponentialRampToValueAtTime(125, now + 0.8);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.06, now + 0.3);
+                gain.gain.linearRampToValueAtTime(0.005, now + 0.8);
+                osc.start(); osc.stop(now + 0.82);
+            } catch(e) {}
+        }
+
+        // Tab routing dispatcher
+        function changeTab(tab) {
+            playClickSound();
+            state.activeTab = tab;
+            render();
+            
+            // Highlight active button
+            const ids = ["timeline", "map", "chat", "games", "rewards"];
+            ids.forEach(id => {
+                const doc = document.getElementById(`nav-${id}`);
+                if (id === tab) {
+                    doc.className = "flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-3 bg-[#046A38] border-[#046A38] text-white font-black scale-102 shadow-sm duration-150";
+                    doc.querySelector('i').setAttribute('class', 'w-4 h-4 text-white');
+                } else {
+                    doc.className = "flex-1 flex flex-col items-center justify-center p-2 rounded-xl border-2 bg-white border-slate-250 text-slate-500 hover:bg-slate-50 duration-150";
+                    doc.querySelector('i').setAttribute('class', 'w-4 h-4 text-slate-500');
+                }
+            });
+        }
+
+        // Render main tabs
+        function render() {
+            const viewport = document.getElementById("viewport");
+            if (state.activeTab === "timeline") {
+                renderTimeline(viewport);
+            } else if (state.activeTab === "map") {
+                renderMap(viewport);
+            } else if (state.activeTab === "chat") {
+                renderChat(viewport);
+            } else if (state.activeTab === "games") {
+                renderGames(viewport);
+            } else if (state.activeTab === "rewards") {
+                renderRewards(viewport);
+            }
+            lucide.createIcons();
+        }
+
+        // --- SUBVIEW 1: TIMELINE ---
+        function renderTimeline(parent) {
+            const selectedEra = HISTORICAL_ERAS.find(e => e.id === state.selectedEraId) || HISTORICAL_ERAS[0];
+            const activeEvent = selectedEra.events[state.activeEventIdx] || selectedEra.events[0];
+
+            let erasHtml = HISTORICAL_ERAS.map(era => {
+                const isSelected = era.id === state.selectedEraId;
+                return `
+                    <button onclick="timelineSelectEra('${era.id}')" class="px-4 py-3 rounded-[18px] border-3 text-xs font-black flex items-center gap-2 whitespace-nowrap transition-all ${
+                        isSelected ? "bg-[#FFD93D] border-[#B45309] text-amber-950 shadow-md scale-102" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }">
+                        <span class="text-base">${era.badge.split(" ")[0]}</span>
+                        <div class="text-left leading-tight">
+                            <p class="font-black text-[10px] md:text-xs">${era.title}</p>
+                            <span class="text-[8px] md:text-[10px] text-slate-400 font-bold">${era.years}</span>
+                        </div>
+                    </button>
+                `;
+            }).join("");
+
+            let stepperHtml = selectedEra.events.map((evt, idx) => {
+                const isActive = idx === state.activeEventIdx;
+                const isPassed = idx < state.activeEventIdx;
+                return `
+                    <button onclick="timelineSelectEvent(${idx})" class="relative z-10 p-0 focus:outline-none">
+                        <div class="w-10 h-10 rounded-full border-3 flex items-center justify-center text-xs shadow-sm transition-all duration-300 ${
+                            isActive ? "bg-[#FFD93D] border-[#B45309] scale-110 ring-2 ring-yellow-300 font-extrabold text-[#231F20]" : isPassed ? "bg-sky-100 border-[#0369A1] text-sky-800" : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                        }">
+                            ${evt.icon}
+                        </div>
+                        <span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-black tracking-tight ${isActive ? "text-slate-950" : "text-slate-400"}">${evt.year}</span>
+                    </button>
+                `;
+            }).join("");
+
+            let progressBarWidth = (state.activeEventIdx / (selectedEra.events.length - 1)) * 100;
+
+            let figuresHtml = selectedEra.figures.map(fig => `
+                <div class="bg-white border-3 border-slate-150 rounded-[20px] p-3.5 shadow-sm flex gap-3 items-center relative overflow-hidden group">
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-[#DA291C]"></div>
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 text-xl flex items-center justify-center shadow shrink-0">${fig.icon}</div>
+                    <div class="leading-snug min-w-0">
+                        <h5 class="font-extrabold text-slate-900 text-xs">${fig.name}</h5>
+                        <span class="text-[8px] font-bold text-[#046A38] bg-emerald-50 px-1 py-0.5 rounded block w-max">${fig.role}</span>
+                        <p class="text-[10px] text-slate-500 font-semibold mt-1 leading-snug">${fig.bio}</p>
+                    </div>
+                </div>
+            `).join("");
+
+            parent.innerHTML = `
+                <div class="space-y-6">
+                    <div class="text-center space-y-1 bg-white border-4 border-[#046A38] p-5 rounded-[24px]">
+                        <span class="bg-[#E0F2FE] text-[#0369A1] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-[#7DD3FC] inline-block">⏳ Passeio Centenário</span>
+                        <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">O Diário do Tempo de Portugal</h2>
+                        <p class="text-[11px] md:text-xs text-slate-600 max-w-lg mx-auto font-medium">Explora as eras fantásticas nas pílulas coloridas! Clica nos botões e lê as aventuras do nosso reino!</p>
+                    </div>
+
+                    <!-- Horiz tabs slider -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 shrink-0 select-none">
+                        ${erasHtml}
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <!-- Left pane: detail card + slider -->
+                        <div class="lg:col-span-8 space-y-6">
+                            <div class="p-5 rounded-[24px] border-3 border-slate-700/10 ${selectedEra.color} space-y-3.5 shadow-sm">
+                                <div class="flex justify-between items-center text-[9px] font-bold uppercase">
+                                    <span class="bg-white/80 border border-slate-200 text-slate-600 px-2.5 py-0.5 rounded-md">${selectedEra.century}</span>
+                                    <span class="bg-white/40 px-2 py-0.5 rounded">${selectedEra.badge}</span>
+                                </div>
+                                <h3 class="text-lg font-black text-slate-800">${selectedEra.title}</h3>
+                                <p class="text-xs md:text-sm font-semibold leading-relaxed">${selectedEra.description}</p>
+                                <div class="bg-white p-3.5 rounded-xl border-3 border-dashed border-[#FFD93D] space-y-0.5 shadow-sm">
+                                    <span class="text-[9px] font-black text-amber-800 uppercase flex items-center gap-1">✨ Curiosidade Recreativa:</span>
+                                    <p class="text-[11px] text-amber-950 font-semibold italic text-slate-650">"${selectedEra.funFact}"</p>
+                                </div>
+                            </div>
+
+                            <!-- Years Stepper slider box -->
+                            <div class="bg-white border-3 border-slate-100 rounded-[24px] p-5 space-y-5 shadow-sm">
+                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Caminho da Viagem: Toca nas datas!</h4>
+                                <div class="relative flex items-center justify-between px-3 pb-4">
+                                    <div class="absolute left-4 right-4 top-4.5 h-1.5 bg-slate-105 rounded-full z-0"></div>
+                                    <div class="absolute left-4 top-4.5 h-1.5 bg-[#FFD93D] rounded-full z-0 transition-all duration-300" style="width: ${progressBarWidth}%"></div>
+                                    ${stepperHtml}
+                                </div>
+
+                                <div class="bg-[#FFFBEB] border-3 border-[#FFD93D] rounded-xl p-4 flex items-start gap-4">
+                                    <div class="text-3xl bg-white p-2.5 rounded-xl border border-amber-200 shadow-sm shrink-0">${activeEvent.icon}</div>
+                                    <div class="leading-tight">
+                                        <span class="text-[9px] font-black bg-amber-200 p-0.5 text-amber-950 rounded">Ano ${activeEvent.year}</span>
+                                        <h4 class="font-black text-sm text-amber-950 mt-1">${activeEvent.title}</h4>
+                                        <p class="text-[11px] md:text-xs text-slate-650 leading-relaxed font-semibold mt-0.5">${activeEvent.desc}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right panel: figures -->
+                        <div class="lg:col-span-4 space-y-4">
+                            <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Vultos e Protagonistas:</h4>
+                            <div class="space-y-3">
+                                ${figuresHtml}
+                            </div>
+                            <div class="bg-[#E0F2FE] rounded-[24px] p-4.5 border-3 border-[#7DD3FC] text-center space-y-1 z-10 relative">
+                                <span class="text-[8px] bg-white text-[#0369A1] font-black px-2 py-0.5 rounded-full border border-sky-200 inline-block">SABEDORIA EXTRA</span>
+                                <p class="text-[10px] text-[#0369A1] font-bold leading-relaxed">Conversa em primeira pessoa com heróis no chat para ganhar pontos extra de XP!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function timelineSelectEra(eraId) {
+            state.selectedEraId = eraId;
+            state.activeEventIdx = 0;
+            playClickSound();
+            render();
+        }
+
+        function timelineSelectEvent(idx) {
+            state.activeEventIdx = idx;
+            playClickSound();
+            render();
+        }
+
+        // --- SUBVIEW 2: MAP ---
+        function renderMap(parent) {
+            const selectSpot = state.selectedSpot;
+
+            let spotPinsHtml = MAP_HOTSPOTS.map(spot => {
+                const isSelected = selectSpot?.id === spot.id;
+                let glyph = "🛡️";
+                if (spot.id === "guimaraes") glyph = "👑";
+                else if (spot.id === "lisboa") glyph = "⛵";
+                else if (spot.id === "sagres") glyph = "🧭";
+                else if (spot.id === "porto") glyph = "🍇";
+                else if (spot.id === "coimbra") glyph = "📚";
+
+                return `
+                    <button onclick="mapClickSpot('${spot.id}')" style="left: ${spot.x}%; top: ${spot.y}%;" class="absolute -translate-x-1/2 -translate-y-1/2 focus:outline-none transition-transform hover:scale-130 active:scale-95 group z-10">
+                        <span class="absolute inline-flex h-9 w-9 -left-2.5 -top-2.5 rounded-full opacity-60 animate-ping ${isSelected ? "bg-red-500" : "bg-yellow-400"}"></span>
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow text-sm ${isSelected ? "bg-[#DA291C]" : spot.color} text-white font-bold relative z-10">
+                            ${glyph}
+                        </div>
+                        <span class="absolute top-8 left-1/2 -translate-x-1/2 bg-blue-950/90 text-white rounded px-2 py-0.5 text-[8px] font-black tracking-tight pointer-events-none group-hover:opacity-100 transition-opacity opacity-0 whitespace-nowrap">${spot.name}</span>
+                    </button>
+                `;
+            }).join("");
+
+            let sidebarHtml = "";
+            let pointsUnlocks = achievements.find(a => a.id === "explorador_tempo")?.unlocked;
+
+            if (selectSpot) {
+                sidebarHtml = `
+                    <div class="bg-white border-4 border-[#0369A1] rounded-[24px] p-5 shadow-sm space-y-4 relative transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-sky-100 border border-sky-200 text-xl flex items-center justify-center shadow-md grow-0 shrink-0 text-sky-850">🗺️</div>
+                            <div>
+                                <span class="text-[8px] font-black uppercase text-slate-400 leading-none">Marco Territorial</span>
+                                <h3 class="text-sm md:text-base font-black text-[#0369A1] leading-none mt-0.5">${selectSpot.title}</h3>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border-2 border-slate-100 rounded-xl p-3.5 space-y-1">
+                            <span class="text-[9px] font-black text-slate-400 uppercase leading-none block">💡 História relevada:</span>
+                            <p class="text-[11px] text-slate-650 leading-relaxed font-semibold">${selectSpot.description}</p>
+                        </div>
+
+                        <div class="bg-[#FFFBEB] border-3 border-[#FFD93D] rounded-xl p-3.5 space-y-1">
+                            <span class="text-[9px] font-black text-amber-900 uppercase leading-none block">✨ Curiosidade Brilhante:</span>
+                            <p class="text-[11px] text-[#046A38] leading-relaxed font-bold italic font-serif">"${selectSpot.fact}"</p>
+                        </div>
+
+                        ${selectSpot.id === "sagres" && !pointsUnlocks ? `
+                            <button onclick="mapUnlockSagres()" class="w-full bg-[#FFD93D] hover:bg-yellow-400 text-amber-950 font-black text-[11px] py-2 px-4 rounded-xl border-b-4 border-amber-700 transition-transform active:translate-y-1 text-center">
+                                🧭 Investigar os Pergaminhos de Sagres (+120 XP!)
+                            </button>
+                        ` : ''}
+
+                        <div class="pt-1 flex justify-between items-center text-[8px] text-slate-400 font-extrabold uppercase">
+                            <span>Pos: X:${selectSpot.x}% Y:${selectSpot.y}%</span>
+                            <span>Portugal Continental</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                sidebarHtml = `
+                    <div class="bg-white border-4 border-dashed border-[#7DD3FC] rounded-[24px] p-6 text-center space-y-3 shadow-sm select-none">
+                        <div class="text-4xl animate-bounce">🎈</div>
+                        <h3 class="text-base font-black text-[#0369A1]">Segredos Geográficos</h3>
+                        <p class="text-[11px] text-blue-950/70 max-w-xs mx-auto leading-relaxed font-bold">Clica em qualquer ponto luminoso com as cores Reais sobre o mapa para ler os diários e conquistas de cada marco do território!</p>
+                        <div class="flex items-center justify-center gap-1.5 bg-[#FFFBEB] border border-[#FFD93D] rounded-full px-3 py-1 w-max mx-auto text-[8px] font-black text-amber-950">
+                            <span>🌐</span> REINO DE PORTUGAL E ALGARVES
+                        </div>
+                    </div>
+                `;
+            }
+
+            parent.innerHTML = `
+                <div class="space-y-6">
+                    <div class="text-center space-y-1 bg-white border-4 border-[#0369A1] p-5 rounded-[24px]">
+                        <span class="bg-[#E0F2FE] text-[#0369A1] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-[#7DD3FC] inline-block">🗺️ Cartografia Viva</span>
+                        <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">O Castelo e o Mar de Portugal</h2>
+                        <p class="text-[11px] md:text-xs text-slate-600 max-w-lg mx-auto font-medium">Toque nos letreiros navegando de norte a sul para decifrar os segredos e as caravelas do nosso porto!</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                        <!-- Left pane: The SVG illustrated map -->
+                        <div class="lg:col-span-7 bg-[#E0F2FE] rounded-[24px] border-4 border-[#7DD3FC] p-4 shadow-sm relative overflow-hidden flex items-center justify-center min-h-[440px] select-none">
+                            <div class="absolute right-4 top-4 opacity-20 w-16 h-16 pointer-events-none animate-spin-slow animate-[spin_60s_linear_infinite]">
+                                <svg viewBox="0 0 100 100" class="text-sky-950 fill-current">
+                                    <path d="M50 0 L55 45 L100 50 L55 55 L50 100 L45 55 L0 50 L45 45 Z" />
+                                </svg>
+                            </div>
+                            <div class="absolute bottom-4 left-4 opacity-25 text-[10px] text-sky-900 font-bold leading-none pointer-events-none">🌊 Ventos propícios e Caravelas ao largo ⛵</div>
+                            <div class="absolute left-6 top-1/3 opacity-15 text-2xl pointer-events-none">🐉</div>
+
+                            <!-- Map box layout -->
+                            <div class="relative w-64 h-[380px] bg-[#E2F8E8] rounded-[40px] border-4 border-[#86EFAC] shadow-inner">
+                                <div class="absolute top-12 right-6 opacity-15 text-sm pointer-events-none">🏔️</div>
+                                <div class="absolute top-1/2 right-10 opacity-15 text-sm pointer-events-none">⛰️</div>
+                                <div class="absolute bottom-20 right-8 opacity-15 text-sm pointer-events-none">🌳</div>
+
+                                <!-- River lines -->
+                                <svg class="absolute w-full h-full pointer-events-none opacity-40 stroke-[#38bdf8]" viewBox="0 0 256 380" fill="none" stroke-linecap="round">
+                                    <path d="M250,220 Q150,230 75,260" stroke-width="6" />
+                                    <path d="M250,90 Q160,85 90,90" stroke-width="6" />
+                                    <path d="M170,280 Q175,330 140,380" stroke-width="6" />
+                                </svg>
+
+                                ${spotPinsHtml}
+                            </div>
+                        </div>
+
+                        <!-- Right pane: Spot description -->
+                        <div class="lg:col-span-5 flex flex-col justify-center">
+                            ${sidebarHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function mapClickSpot(id) {
+            const found = MAP_HOTSPOTS.find(m => m.id === id);
+            state.selectedSpot = found;
+            if (id === "sagres" || id === "lisboa") playWaveSound();
+            else playClickSound();
+            render();
+        }
+
+        function mapUnlockSagres() {
+            unlockAchievement("explorador_tempo");
+            render();
+        }
+
+        // --- SUBVIEW 3: CHAT ---
+        function renderChat(parent) {
+            const selectedChar = HISTORICAL_CHARACTERS.find(c => c.key === state.selectedCharKey) || HISTORICAL_CHARACTERS[0];
+            const messages = state.chatMessages[state.selectedCharKey] || [{ role: "model", text: selectedChar.greeting }];
+
+            let charsHtml = HISTORICAL_CHARACTERS.map(char => {
+                const isSelected = char.key === state.selectedCharKey;
+                return `
+                    <button onclick="chatSelectChar('${char.key}')" class="w-full text-left p-3.5 rounded-[18px] flex items-center gap-3 border-3 transition-all shrink-0 md:shrink border-slate-100 ${
+                        isSelected ? "bg-white border-[#DA291C] shadow-md scale-102" : "bg-white hover:border-slate-350"
+                    }">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr ${char.color} flex items-center justify-center text-2xl shadow border border-white shrink-0">${char.avatar}</div>
+                        <div class="overflow-hidden leading-tight text-slate-800">
+                            <h4 class="font-black text-xs truncate">${char.name}</h4>
+                            <p class="text-[8px] text-slate-400 font-bold uppercase truncate mt-1">${char.title}</p>
+                        </div>
+                    </button>
+                `;
+            }).join("");
+
+            let bubblesHtml = messages.map(msg => {
+                const isMe = msg.role === "user";
+                return `
+                    <div class="flex ${isMe ? "justify-end" : "justify-start"} animate-[fadeIn_0.2s_ease-out]">
+                        <div class="p-3 rounded-2xl max-w-[85%] leading-relaxed text-xs shadow-sm ${
+                            isMe ? "bg-[#046A38] text-white rounded-br-none border border-emerald-700 font-bold" : "bg-white text-slate-800 rounded-bl-none border border-amber-100 font-semibold"
+                        }">
+                            ${msg.text}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            let suggestions = [];
+            if (state.selectedCharKey === "afonso_henriques") {
+                suggestions = ["Quem é D. Teresa?", "Qual o poder da tua espada?", "O que aconteceu em Ourique?", "Diz de onde nasceste!"];
+            } else if (state.selectedCharKey === "camoes") {
+                suggestions = ["Como perdeste o olho em combate?", "Como salvaste o teu poema do naufrágio?", "Quem é o gigante Adamastor?", "Diz uma rima bonita!"];
+            } else if (state.selectedCharKey === "vasco_da_gama") {
+                suggestions = ["Como é navegar na caravela?", "O que fizeste na Índia?", "Que especiarias trouxeste?", "Iça as velas capitão!"];
+            } else if (state.selectedCharKey === "maria_ii") {
+                suggestions = ["A ti chamam A Educadora?", "Como foi o primeiro comboio?", "Como governar com sabedoria?", "Que idade tinhas ao mandar?"];
+            } else {
+                suggestions = ["Quem são os teus heterónimos?", "Por que escreves com outros nomes?", "Diz-me um poema sobre sonhos!", "Adoras tomar café na Baixa?"];
+            }
+
+            let suggestionsHtml = suggestions.map((sug, sIdx) => `
+                <button onclick="chatSendPredefined('${sug.replace(/'/g, "\\'")}')" class="bg-white/90 border border-amber-200 hover:bg-amber-100 text-[9px] font-black text-amber-950 px-2.5 py-1.5 rounded-xl whitespace-nowrap shadow-sm transition-colors">${sug}</button>
+            `).join("");
+
+            parent.innerHTML = `
+                <div class="space-y-6">
+                    <div class="text-center space-y-1 bg-white border-4 border-[#DA291C] p-5 rounded-[24px]">
+                        <span class="bg-[#FEE2E2] text-[#DA291C] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-red-200 inline-block">💬 Diálogos Digitais</span>
+                        <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Conversa Direta com os Heróis</h2>
+                        <p class="text-[11px] md:text-xs text-slate-600 max-w-lg mx-auto font-medium">Interroga reis, sábios, rainhas e grandes marinheiros da nossa pátria em conversas divertidas!</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                        <!-- Left pane: character select -->
+                        <div class="md:col-span-4 flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 shrink-0 md:pb-0 select-none">
+                            ${charsHtml}
+                        </div>
+
+                        <!-- Right pane: actual conversation chat layout -->
+                        <div class="md:col-span-8 flex flex-col justify-between bg-amber-50 border-4 border-amber-300 rounded-[24px] p-4 min-h-[440px] relative">
+                            <!-- Character speech header bubble -->
+                            <div class="flex items-center justify-between border-b border-amber-200 pb-3 mb-3 shrink-0">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-11 h-11 rounded-full bg-gradient-to-tr ${selectedChar.color} flex items-center justify-center text-3xl border-2 border-white shadow-sm shrink-0">${selectedChar.avatar}</div>
+                                    <div class="leading-none">
+                                        <h3 class="font-black text-[#B45309] text-sm">${selectedChar.name}</h3>
+                                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wide">${selectedChar.title}</span>
+                                    </div>
+                                </div>
+                                <button onclick="chatToggleSpeak()" class="p-2 bg-white border-2 border-amber-200 rounded-full text-slate-600 hover:text-slate-800 focus:scale-105 active:scale-95 duration-100">
+                                    <i data-lucide="${state.isSpeaking ? "volume-x" : "volume-2"}" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <!-- Bubble flow scroll box -->
+                            <div id="chat-messages-flow" class="flex-1 overflow-y-auto max-h-[220px] space-y-3.5 pr-1 py-1">
+                                ${bubblesHtml}
+                                ${state.chatIsLoading ? `
+                                    <div class="flex justify-start">
+                                        <div class="bg-white text-slate-400 p-3.5 rounded-2xl rounded-bl-none border border-amber-100 flex items-center gap-2 font-bold italic shadow-xs text-xs">
+                                            <span class="animate-spin text-sm">⏳</span> ${selectedChar.name} está a ler os pergaminhos...
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Suggestions quick-bar -->
+                            <div class="mt-3 pt-2 border-t border-amber-200/60 shrink-0">
+                                <p class="text-[9px] font-black uppercase text-amber-800 tracking-wider mb-2 flex items-center gap-1">📌 Ideias de Perguntas:</p>
+                                <div class="flex gap-1.5 overflow-x-auto pb-1.5 shrink-0 select-none">
+                                    ${suggestionsHtml}
+                                </div>
+                            </div>
+
+                            <!-- Input panel -->
+                            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-amber-200/30 shrink-0">
+                                <input id="chat-write-input" type="text" placeholder="Escreve uma pergunta Real, jovem..." class="flex-1 bg-white border-2 border-amber-200 rounded-xl px-3.5 py-2 text-xs font-semibold text-amber-950 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200" onkeydown="chatHandleKeyDown(event)">
+                                <button onclick="chatSendMessage()" class="bg-amber-500 hover:bg-amber-600 border-b-4 border-amber-700 text-white px-4 py-2.1 rounded-xl shadow-md duration-75 flex items-center justify-center shrink-0">
+                                    <i data-lucide="send" class="w-4 h-4 text-white"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Scroll down
+            const flow = document.getElementById("chat-messages-flow");
+            if (flow) flow.scrollTop = flow.scrollHeight;
+        }
+
+        function chatSelectChar(key) {
+            state.selectedCharKey = key;
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            state.isSpeaking = false;
+            playClickSound();
+            render();
+        }
+
+        function chatToggleSpeak() {
+            playClickSound();
+            if (!("speechSynthesis" in window)) return alert("Speech Synthesis não suportado neste browser.");
+            
+            if (state.isSpeaking) {
+                window.speechSynthesis.cancel();
+                state.isSpeaking = false;
+                render();
+                return;
+            }
+
+            const messages = state.chatMessages[state.selectedCharKey] || [];
+            if (!messages.length) {
+                const char = HISTORICAL_CHARACTERS.find(c => c.key === state.selectedCharKey);
+                if (char) messages.push({ role: "model", text: char.greeting });
+            }
+            const lastText = messages[messages.length - 1]?.text || "";
+            if (!lastText) return;
+
+            const cleanText = lastText.replace(/[*#_\[\]]/g, "");
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            
+            const voices = window.speechSynthesis.getVoices();
+            let voice = voices.find(v => v.lang === "pt-PT") || voices.find(v => v.lang.startsWith("pt"));
+            if (voice) utterance.voice = voice;
+
+            utterance.onend = () => { state.isSpeaking = false; render(); };
+            utterance.onerror = () => { state.isSpeaking = false; render(); };
+
+            state.isSpeaking = true;
+            window.speechSynthesis.speak(utterance);
+            render();
+        }
+
+        function chatHandleKeyDown(e) {
+            if (e.key === "Enter") chatSendMessage();
+        }
+
+        function chatSendPredefined(text) {
+            chatSendMessage(text);
+        }
+
+        async function chatSendMessage(customText) {
+            const input = document.getElementById("chat-write-input");
+            const text = (customText || input?.value || "").trim();
+            if (!text || state.chatIsLoading) return;
+
+            if (input) input.value = "";
+            playClickSound();
+
+            let msgs = state.chatMessages[state.selectedCharKey];
+            if (!msgs) {
+                const char = HISTORICAL_CHARACTERS.find(c => c.key === state.selectedCharKey);
+                msgs = [{ role: "model", text: char.greeting }];
+            }
+
+            msgs.push({ role: "user", text: text });
+            state.chatMessages[state.selectedCharKey] = msgs;
+            state.chatIsLoading = true;
+            render();
+
+            try {
+                // Post locally
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        character: state.selectedCharKey,
+                        prompt: text,
+                        history: msgs.slice(1, -1)
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server fail");
+                const data = await response.json();
+                
+                msgs.push({ role: "model", text: data.reply });
+                addPoints(15);
+                unlockAchievement("conversa_imperio");
+            } catch (err) {
+                // Fallback simulation
+                const simulationReply = simulateHeroReply(state.selectedCharKey, text);
+                msgs.push({ role: "model", text: simulationReply });
+                addPoints(15);
+                unlockAchievement("conversa_imperio");
+            } finally {
+                state.chatIsLoading = false;
+                render();
+                autoSpeakReply();
+            }
+        }
+
+        function autoSpeakReply() {
+            if ("speechSynthesis" in window && state.isSpeaking) {
+                window.speechSynthesis.cancel();
+                const msgs = state.chatMessages[state.selectedCharKey];
+                const last = msgs[msgs.length - 1]?.text || "";
+                const clean = last.replace(/[*#_\[\]]/g, "");
+                const utterance = new SpeechSynthesisUtterance(clean);
+                const voices = window.speechSynthesis.getVoices();
+                let voice = voices.find(v => v.lang === "pt-PT") || voices.find(v => v.lang.startsWith("pt"));
+                if (voice) utterance.voice = voice;
+                utterance.onend = () => { state.isSpeaking = false; render(); };
+                utterance.onerror = () => { state.isSpeaking = false; render(); };
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function simulateHeroReply(charKey, text) {
+            const query = text.toLowerCase();
+            
+            if (charKey === "afonso_henriques") {
+                if (query.includes("teresa") || query.includes("condado") || query.includes("mãe") || query.includes("mamede")) {
+                     return "Ah, jovem fidalgo! Minha mãe, D. Teresa, preferia aliar-se aos nobres da Galiza, mas os valorosos nobres de Portugal queriam liberdade! Defrontei-a na Batalha de São Mamede de Guimarães para darmos o grito de independência real!";
+                }
+                if (query.includes("espada") || query.includes("arma") || query.includes("força")) {
+                     return "A minha lendária espada medieval foi forjada com as pedras fortes de Guimarães. Dizem as bocas que eram precisos três fortes homens só para a levantar da bainha! Mas a verdadeira força vem da honra e do orgulho em consagrar as nossas fronteiras!";
+                }
+                if (query.includes("ourique") || query.includes("mouros") || query.includes("milagre")) {
+                     return "Em Ourique, no ano de 1139, fomos emboscados por cinco exércitos mouros. Contra todas as probabilidades, mostrámos sabedoria táctica e fomos coroados pelos nossos nobres! É por estas quinas azuis no escudo que lutamos!";
+                }
+                if (query.includes("lisboa") || query.includes("conquista")) {
+                     return "Conquistar Lisboa em 1147 foi heróico! Recorremos à astuta ajuda de cavaleiros cruzados internacionais de passagem para hastear esta orgulhosa bandeira nacional no castelo de onde o vento assobia alto.";
+                }
+                return "Jovem fidalgo! As minhas memórias do heroísmo das terras de Guimarães, das defesas das margens e do Tratado de Zamora estão seguras no peito da minha pesada armadura!";
+            }
+            
+            if (charKey === "camoes") {
+                if (query.includes("olho") || query.includes("combate") || query.includes("perdeu")) {
+                     return "Jovem bardo! Venci combates ferozes na mística praça de Ceuta contra os mouros, onde perdi o olho direito nas explosões. Mas isso avivou em mim a imaginação sagrada, para canção e glória das caravelas raras!";
+                }
+                if (query.includes("naufrágio") || query.includes("rio") || query.includes("nadar")) {
+                     return "Um naufrágio fustigou a caravela no distante rio Mekong! Tive de saltar à água fria e nadar com apenas um braço erguendo bem acima das ondas o manuscrito molhado de 'Os Lusíadas'. Pela glória do livro das rimas ricas!";
+                }
+                if (query.includes("adamastor") || query.includes("monstro")) {
+                     return "O terrível gigante Adamastor representava os medos e as tormentas do Cabo! Ele tentou asfixiar os nossos heróis marinheiros com uivos e fumo, mas com paciência marítima, o gigante desfez-se em choro salgado!";
+                }
+                if (query.includes("rima") || query.includes("poesia") || query.includes("verso")) {
+                     return "Escuta esta estrofe de ouro: 'Mudam-se os tempos, mudam-se as vontades, / Todo o mundo é composto de mudança, / Tomando sempre novas qualidades!'";
+                }
+                return "Saudações poéticas, jovem! Curioso sobre os segredos das águas de Sagres, as aventuras molhadas do Rio Mekong ou as doces estâncias líricas dos nossos navegadores?";
+            }
+            
+            if (charKey === "vasco_da_gama") {
+                if (query.includes("caravela") || query.includes("navegar") || query.includes("barco")) {
+                     return "Grumete destemido! Navegar numa caravela real de velas latinas de Sagres é bailar sobre as ondas gigantes do Atlântico. Comíamos biscoitos duros e contornávamos perigos com o astrolábio e a bússola dourada apontada às estrelas!";
+                }
+                if (query.includes("índia") || query.includes("calecute")) {
+                     return "Quando aportámos no porto de Calecute em 1498, fomos envolvidos no maravilhoso aroma de pimenta preta ardente e cravinho! Foi a travessia mais longa de toda a história marítima, garantindo as rotas comerciais de ouro!";
+                }
+                if (query.includes("especiarias") || query.includes("pimenta") || query.includes("canela")) {
+                     return "Trouxemos caravelas inteiras atafulhadas em sacas de canela perfumada, gengibre dourado e cravo indonésio! Sabias que, naquela era, um saco de pimenta preta pura valia mais do que as moedas do baú real do rei?";
+                }
+                return "Ahoy grumete! Desejas desvendar as rotas estreladas do Cabo, provar o sabor das especiarias raras indonésias ou içar as velas contra as tormentas do Adamastor?";
+            }
+            
+            if (charKey === "maria_ii") {
+                if (query.includes("educadora") || query.includes("escola") || query.includes("ensino")) {
+                     return "Querido aluno! Dediquei o meu reinado a inaugurar escolas públicas gratuitas. Um povo que sabe ler e escrever possui as rédeas da própria consciência livres das trevas!";
+                }
+                if (query.includes("comboio") || query.includes("vapor") || query.includes("férrea")) {
+                     return "O progresso cobriu o território! Sentimos a fumaça branca do grandioso comboio a vapor correndo sobre a novíssima grade de ferro do Carregado. Que admirável velocidade de 30 km/h que fez tremer de espanto a corte!";
+                }
+                if (query.includes("idade") || query.includes("rainha") || query.includes("governo")) {
+                     return "Iniciei o meu fardo monárquico com tão pouco quanto 15 anos de idade. Foi uma era turbulenta de lutas constitucionais liberais, mas governei sempre com afeto e cultura escolar.";
+                }
+                return "Sejas bem-vindo ao meu salão pedagógico. Partilha as tuas perguntas para conhecermos o comboio de ferro a vapor ou o despertar de novas escolas públicas no país!";
+            }
+
+            // Fernando Pessoa
+            if (query.includes("heterónimos") || query.includes("nomes") || query.includes("outro")) {
+                 return "Pequeno sonhador! Criei Alberto Caeiro que amava o aroma a pastagens livres, Álvaro de Campos devoto de navios modernos e progresso industrial, e Ricardo Reis que bebia versos do latim clássico. São as minhas mil vidas expressadas na escrita!";
+            }
+            if (query.includes("café") || query.includes("baixa") || query.includes("brasileira")) {
+                 return "Adoro sentar-me a saborear uma saborosa bica forte nas mesas de 'A Brasileira' da Baixa de Lisboa, rascunhando rimas misteriosas e filosofias de vida em pequenos guardanapos de papel amarelado.";
+            }
+            if (query.includes("sonho") || query.includes("frase") || query.includes("alma")) {
+                 return "Escrevi para o tempo de Portugal: 'Deus quer, o homem sonha, a obra nasce!' Mantém o olhar focado nos astros e recorda que 'tudo vale a pena se a alma não for pequena'!";
+            }
+            return "Boa tarde, pequeno sonhador. Junta-te à minha mesa de café na Baixa de Lisboa para rascunharmos poesias sobre heterónimos e as quinas eternas do nosso fado!";
+        }
+
+        // --- SUBVIEW 4: GAMES & QUIZZES ---
+        function renderGames(parent) {
+            let selectorHtml = `
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 rounded-[24px] border-4 border-[#046A38] shadow-sm select-none">
+                    <h2 class="text-base md:text-lg font-black text-slate-800 flex items-center gap-2">🧭 Sala das Descobertas</h2>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button onclick="gamesSelectTab('quiz')" class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-[10px] md:text-xs font-black border-2 transition-all ${
+                            state.activeGame === "quiz" ? "bg-[#FFD93D] border-[#B45309] text-amber-950 font-black shadow-xs" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                        }">👑 Quiz do Reino</button>
+                        <button onclick="gamesSelectTab('ocean')" class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-[10px] md:text-xs font-black border-2 transition-all ${
+                            state.activeGame === "ocean" ? "bg-[#E0F2FE] border-[#0369A1] text-sky-950 font-black shadow-xs" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                        }">⛵ Rota das Caravelas</button>
+                        <button onclick="gamesSelectTab('poetry')" class="flex-1 sm:flex-none px-3 py-2 rounded-xl text-[10px] md:text-xs font-black border-2 transition-all ${
+                            state.activeGame === "poetry" ? "bg-[#F3E8FF] border-[#7E22CE] text-purple-950 font-black shadow-xs" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                        }">✍️ Enigma dos Poetas</button>
+                    </div>
+                </div>
+            `;
+
+            let activityHtml = "";
+            if (state.activeGame === "quiz") {
+                activityHtml = renderQuizGame();
+            } else if (state.activeGame === "ocean") {
+                activityHtml = renderOceanGame();
+            } else if (state.activeGame === "poetry") {
+                activityHtml = renderPoetryGame();
+            }
+
+            parent.innerHTML = `
+                <div class="space-y-6">
+                    ${selectorHtml}
+                    <div>
+                        ${activityHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function gamesSelectTab(tab) {
+            state.activeGame = tab;
+            playClickSound();
+            render();
+        }
+
+        // GAME A: QUIZ
+        function renderQuizGame() {
+            const filterQuestions = QUIZ_QUESTIONS.filter(q => q.eraId === state.quizSelectedEra);
+            const currentQuestion = filterQuestions[state.quizCurrentIdx];
+
+            let eraChooserHtml = [
+                { id: "fundacao", name: "🏰 Fundação", color: "bg-amber-100 hover:bg-amber-200 text-amber-950 border-amber-200" },
+                { id: "descobrimentos", name: "⛵ Descobrimentos", color: "bg-sky-100 hover:bg-sky-200 text-sky-950 border-sky-200" },
+                { id: "crise_restauracao", name: "👑 Restauração", color: "bg-rose-100 hover:bg-rose-200 text-rose-950 border-rose-200" },
+                { id: "revolucao_republica", name: "🚂 República", color: "bg-emerald-100 hover:bg-emerald-200 text-emerald-950 border-emerald-250" },
+                { id: "democracia", name: "🕊️ Democracia", color: "bg-purple-100 hover:bg-purple-200 text-purple-950 border-purple-200" }
+            ].map(era => `
+                <button onclick="quizChangeEra('${era.id}')" class="px-3 py-1.5 rounded-lg text-[10px] font-black border-2 transition-all shrink-0 ${
+                    state.quizSelectedEra === era.id ? "bg-amber-500 border-amber-600 text-white shadow" : era.color
+                }">${era.name}</button>
+            `).join("");
+
+            if (state.quizShowSummary) {
+                let unlockedCoroa = achievements.find(a => a.id === "coroa_afonso")?.unlocked;
+                return `
+                    <div class="bg-white border-4 border-[#FFD93D] rounded-[24px] p-6 max-w-md mx-auto text-center space-y-5 shadow-sm">
+                        <div class="text-5xl animate-bounce">🏆</div>
+                        <div class="space-y-1 leading-none">
+                            <h3 class="text-base font-black text-blue-950">Fim do Quiz Temático!</h3>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Pontos e sabedoria conquistados no século</p>
+                        </div>
+                        <div class="w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-400 flex items-center justify-center text-2xl font-black text-amber-950 mx-auto shadow-inner">
+                            ${state.quizScore}/${filterQuestions.length}
+                        </div>
+                        <p class="text-xs text-slate-600 leading-normal font-semibold">
+                            ${state.quizScore === 3 ? "Incrível! Mereces a espada de ouro da guarda do Rei Afonso! Acertaste em tudo!" : state.quizScore === 2 ? "Muito bom esforço! Já dominas grandes mistérios da heráldica!" : "Bom esforço! Torna a tentar e conseguirás a nota de ouro real!"}
+                        </p>
+                        ${state.quizSelectedEra === "fundacao" && state.quizScore >= 2 && !unlockedCoroa ? `
+                            <div class="bg-green-50 text-green-800 text-[10px] font-bold p-3 border-2 border-dashed border-green-300 rounded-xl">👑 Desbloqueaste a Conquista "Cavaleiro do Reino" no Armário das Recompensas!</div>
+                        ` : ''}
+                        <button onclick="quizReset()" class="w-full bg-slate-100 hover:bg-slate-200 border border-slate-250 font-black text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Responder de Novo</button>
+                    </div>
+                `;
+            }
+
+            let optionsHtml = currentQuestion.options.map((opt, oIdx) => {
+                const remainsUnanswered = !state.quizIsAnswered;
+                const isSelected = state.quizSelectedOption === oIdx;
+                const isCorrectOpt = oIdx === currentQuestion.correctAnswer;
+                
+                let optStyles = "bg-white border-2 border-slate-100 hover:border-slate-350";
+                if (remainsUnanswered && isSelected) {
+                    optStyles = "bg-amber-100 border-amber-400 text-amber-950 ring-2 ring-amber-150";
+                } else if (state.quizIsAnswered) {
+                    if (isCorrectOpt) {
+                        optStyles = "bg-green-100 border-green-500 text-green-950 ring-2 ring-green-150";
+                    } else if (isSelected) {
+                        optStyles = "bg-rose-100 border-rose-450 text-rose-950 ring-2 ring-rose-150";
+                    } else {
+                        optStyles = "bg-slate-50 border-slate-100 opacity-50";
+                    }
+                }
+
+                let badge = String.fromCharCode(65 + oIdx);
+                let checkBadge = `bg-slate-100 text-slate-700`;
+                if (state.quizIsAnswered && isCorrectOpt) checkBadge = 'bg-green-500 text-white';
+                else if (state.quizIsAnswered && isSelected) checkBadge = 'bg-rose-500 text-white';
+                else if (isSelected) checkBadge = 'bg-amber-400 text-amber-950';
+
+                return `
+                    <button onclick="quizSelectOption(${oIdx})" ${state.quizIsAnswered ? "disabled" : ""} class="w-full text-left p-3.5 rounded-xl text-[11px] font-semibold transition-all duration-100 flex items-center gap-3 ${optStyles}">
+                        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${checkBadge}">${badge}</span>
+                        <span class="flex-1 leading-snug">${opt}</span>
+                    </button>
+                `;
+            }).join("");
+
+            let feedbackHtml = "";
+            if (state.quizIsAnswered) {
+                const correct = state.quizSelectedOption === currentQuestion.correctAnswer;
+                feedbackHtml = `
+                    <div class="p-3.5 rounded-xl border-2 ${correct ? "bg-green-50 border-green-200 text-green-950" : "bg-amber-50 border-amber-200 text-amber-950"} space-y-1">
+                        <div class="flex items-center gap-1 font-bold text-xs">
+                            <span>${correct ? "✅" : "⚠️"}</span>
+                            <span class="font-black uppercase">${correct ? "Exato! Grandioso!" : "Coragem, aprende com o erro!"}</span>
+                        </div>
+                        <p class="text-[10px] md:text-xs font-semibold leading-relaxed">${currentQuestion.explanation}</p>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="bg-white border-4 border-[#FFD93D] rounded-[24px] p-5 md:p-6 space-y-5 shadow-sm">
+                    <div class="space-y-1.5 select-none">
+                        <span class="text-[9px] font-black uppercase text-amber-800 leading-none block">Século e Tema do Saber:</span>
+                        <div class="flex gap-1.5 overflow-x-auto pb-1.5 shrink-0 scrollbar-none">${eraChooserHtml}</div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-[10px] font-black text-amber-900 border-b pb-2">
+                        <span class="uppercase">Quiz Portugal</span>
+                        <span>Pergunta ${state.quizCurrentIdx + 1} de ${filterQuestions.length}</span>
+                    </div>
+
+                    <h3 class="text-sm md:text-base font-black text-blue-950 leading-snug">${currentQuestion.question}</h3>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${optionsHtml}
+                    </div>
+
+                    ${feedbackHtml}
+
+                    <div class="flex justify-end pt-1">
+                        ${!state.quizIsAnswered ? `
+                            <button onclick="quizConfirmAnswer()" ${state.quizSelectedOption === null ? "disabled" : ""} class="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-black text-xs py-2 px-5 rounded-lg border-b-4 border-amber-700 active:translate-y-0.5 whitespace-nowrap">Confirmar Resposta 📜</button>
+                        ` : `
+                            <button onclick="quizNextQuestion()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-2 px-5 rounded-lg border-b-4 border-emerald-800 active:translate-y-0.5 whitespace-nowrap">${state.quizCurrentIdx + 1 < filterQuestions.length ? "Seguinte Pergunta ➡️" : "Ver Resultados 🏆"}</button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function quizChangeEra(id) {
+            state.quizSelectedEra = id;
+            state.quizCurrentIdx = 0;
+            state.quizSelectedOption = null;
+            state.quizIsAnswered = false;
+            state.quizScore = 0;
+            state.quizShowSummary = false;
+            playClickSound();
+            render();
+        }
+
+        function quizSelectOption(optIdx) {
+            if (state.quizIsAnswered) return;
+            state.quizSelectedOption = optIdx;
+            playClickSound();
+            render();
+        }
+
+        function quizConfirmAnswer() {
+            if (state.quizIsAnswered || state.quizSelectedOption === null) return;
+            state.quizIsAnswered = true;
+            const filterQuestions = QUIZ_QUESTIONS.filter(q => q.eraId === state.quizSelectedEra);
+            const curQ = filterQuestions[state.quizCurrentIdx];
+
+            if (state.quizSelectedOption === curQ.correctAnswer) {
+                playSuccessSound();
+                state.quizScore++;
+                addPoints(25);
+            } else {
+                playFailSound();
+            }
+            render();
+        }
+
+        function quizNextQuestion() {
+            const filterQuestions = QUIZ_QUESTIONS.filter(q => q.eraId === state.quizSelectedEra);
+            if (state.quizCurrentIdx + 1 < filterQuestions.length) {
+                state.quizCurrentIdx++;
+                state.quizSelectedOption = null;
+                state.quizIsAnswered = false;
+                playClickSound();
+                render();
+            } else {
+                state.quizShowSummary = true;
+                if (state.quizSelectedEra === "fundacao" && state.quizScore >= 2) {
+                    unlockAchievement("coroa_afonso");
+                }
+                playClickSound();
+                render();
+            }
+        }
+
+        function quizReset() {
+            state.quizCurrentIdx = 0;
+            state.quizSelectedOption = null;
+            state.quizIsAnswered = false;
+            state.quizScore = 0;
+            state.quizShowSummary = false;
+            playClickSound();
+            render();
+        }
+
+        // GAME B: CARAVELAS (OCEAN)
+        const SCENARIOS = [
+            {
+                title: "Desafio 1: O Cabo das Tormentas 🌊",
+                question: "Uma tempestade terrível fustiga as caravelas de Bartolomeu Dias! Ondas do tamanho de muralhas ameaçam quebrar a madeira. O que decides fazer?",
+                choices: [
+                    { text: "Navegar ao largo em direção ao mar alto longe das rochas (Manobra Segura)", safe: true, successMsg: "Manobra genial! Desviaste-te das rochas e conseguiste passar o cabo com segurança!", failMsg: "" },
+                    { text: "Aproximar o navio ao máximo da terra escura para ver o farol (Arriscado)", safe: false, successMsg: "", failMsg: "As correntes empurraram o navio ferozmente contra os recifes! Perdeste 1 coração." }
+                ]
+            },
+            {
+                title: "Desafio 2: O Gigante Adamastor 🐉",
+                question: "Uma montanha de nuvens negras toma a forma uivante do lendário Adamastor! Ele ordena que rodem caravelas de volta a Lisboa. O que pretendes?",
+                choices: [
+                    { text: "Entrar em pânico e deitar as valiosas especiarias às águas para lhe acalmar", safe: false, successMsg: "", failMsg: "O gigante riu-se do teu medo e soprou forte tempestade nas velas! Perdeste 1 coração." },
+                    { text: "Olhar alto para o astrolábio e recitar com fulgor uma cantiga livre", safe: true, successMsg: "Grandioso! Perante o teu berrante patriotismo, o gigante encolheu e derreteu-se em lágrimas salgadas!", failMsg: "" }
+                ]
+            },
+            {
+                title: "Desafio 3: O Oceano Índico 🏝️",
+                question: "Chegas à entrada marítima da Índia sob calor abrasador. Para descer até Calecute rapidamente antes que quebrem os pães secos, o que fazes?",
+                choices: [
+                    { text: "Bolinar ao ziguezague usando as formosas velas latinas triangulares", safe: true, successMsg: "Perfeito! Aportaram gloriosamente em Calecute! O mar foi desbravado!", failMsg: "" },
+                    { text: "Içar âncoras e aguardar calmos três meses para o vento rodar de borla", safe: false, successMsg: "", failMsg: "Os biscoitos de viagem criaram bolor e a marinharia adoeceu! Perdeste 1 coração." }
+                ]
+            }
+        ];
+
+        function renderOceanGame() {
+            if (state.oceanIsGameOver) {
+                return `
+                    <div class="bg-white border-4 border-rose-300 rounded-[24px] p-6 max-w-sm mx-auto text-center space-y-4 shadow-sm select-none">
+                        <div class="text-6xl">☠️⚓</div>
+                        <h3 class="text-base font-black text-rose-950 leading-none">A Caravela Naufragou!</h3>
+                        <p class="text-[11px] text-slate-500 font-semibold leading-relaxed">O gigante Adamastor levou a melhor perante o timão. Mas o verdadeiro grumete ergue-se e limpa o sal!</p>
+                        <button onclick="oceanRestart()" class="w-full bg-sky-500 hover:bg-sky-600 hover:border-sky-800 text-white font-black text-xs py-2.5 rounded-xl border-b-4 border-sky-700 animate-pulse">Içar velas novamente ⛵</button>
+                    </div>
+                `;
+            }
+
+            if (state.oceanIsGameWon) {
+                return `
+                    <div class="bg-white border-4 border-green-300 rounded-[24px] p-6 max-w-md mx-auto text-center space-y-4 shadow-sm">
+                        <div class="text-6xl animate-bounce">🍛🕌👑</div>
+                        <span class="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-green-200 inline-block uppercase leading-none">VITÓRIA MARÍTIMA</span>
+                        <h3 class="text-base font-black text-green-950 mt-1 leading-none">Ancoraste na Índia!</h3>
+                        <p class="text-[11px] text-slate-500 leading-relaxed font-semibold">Trazes toneladas de pimenta e canela! Salvaguardaste as caravelas, derrotaste o monstro e os teus marinheiros festejam.</p>
+                        <div class="bg-sky-50 text-[#0369A1] font-black border border-sky-100 rounded-xl p-3.5 text-[10px] leading-normal text-center">🏆 Recebeste a Medalha de <b>Navegador dos Sete Mares</b> no teu Cabine e ganhaste <b>+150 XP!</b></div>
+                        <button onclick="oceanRestart()" class="w-full bg-[#046A38] hover:bg-[#166534] hover:border-green-800 text-white font-black text-xs py-2.5 rounded-xl border-b-4 border-[#075309]">Traçar Novo Rumo 🧭</button>
+                    </div>
+                `;
+            }
+
+            const current = SCENARIOS[state.oceanStep];
+
+            let hearts = "";
+            for (let i = 0; i < 3; i++) {
+                hearts += i < state.oceanHp ? "❤️" : "🖤";
+            }
+
+            let choicesHtml = current.choices.map((ch, idx) => `
+                <button onclick="oceanClickChoice(${ch.safe}, '${ch.successMsg.replace(/'/g, "\\'")}', '${ch.failMsg.replace(/'/g, "\\'")}')" class="w-full text-left bg-white hover:bg-sky-50 border-2 border-sky-200 rounded-xl p-3 text-[11px] font-semibold tracking-tight transition-all">${ch.text}</button>
+            `).join("");
+
+            return `
+                <div class="bg-white border-4 border-[#7DD3FC] rounded-[24px] p-5 space-y-5 shadow-sm">
+                    <div class="flex justify-between items-center text-[10px] font-black text-sky-950 border-b pb-2 flex-wrap gap-2">
+                        <span class="uppercase flex items-center gap-1">⛵ Aventuras do Alto Mar</span>
+                        <div class="flex gap-3 items-center">
+                            <span>Vidas: <span class="tracking-wide">${hearts}</span></span>
+                            <span class="bg-sky-50 border border-sky-200 px-2 rounded">Escala ${state.oceanStep + 1}/3</span>
+                        </div>
+                    </div>
+
+                    <!-- Sea waves simulation -->
+                    <div class="bg-sky-50 rounded-xl border border-sky-200 h-32 flex justify-center items-center relative overflow-hidden select-none">
+                        <span class="text-7xl animate-[float_3s_infinite_ease-after] block relative z-10">⛵</span>
+                        ${state.oceanStep === 1 ? `<span class="text-6.5xl absolute right-12 bottom-2 animate-pulse">🐉</span>` : ""}
+                        ${state.oceanStep === 2 ? `<span class="text-6xl absolute right-14 bottom-4">🕌</span>` : ""}
+                        <div class="absolute bottom-1 left-2 bg-white/70 px-1.5 rounded text-[8px] border font-mono">MAPA: ${state.oceanStep === 0 ? "Atlântico" : state.oceanStep === 1 ? "Cabo das Tormentas" : "Oceano Índico"}</div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h4 class="text-xs font-black text-sky-950">${current.title}</h4>
+                        <p class="text-[11px] text-slate-705 bg-slate-50 border p-3 rounded-lg leading-normal font-medium italic">"${current.question}"</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        ${choicesHtml}
+                    </div>
+
+                    <!-- Maritime logs -->
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-sky-400 font-mono text-[10px] leading-relaxed">
+                        💻 DIÁRIO DE BORDO: <span class="font-sans font-semibold text-sky-200 leading-normal block mt-1">${state.oceanLog}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function oceanClickChoice(safe, succ, fail) {
+            playClickSound();
+            if (safe) {
+                state.oceanLog = succ;
+                playWaveSound();
+                if (state.oceanStep + 1 >= 3) {
+                    state.oceanIsGameWon = true;
+                    unlockAchievement("mestre_caravela");
+                    addPoints(150);
+                } else {
+                    state.oceanStep++;
+                }
+            } else {
+                state.oceanLog = fail;
+                playFailSound();
+                state.oceanHp--;
+                if (state.oceanHp <= 0) {
+                    state.oceanIsGameOver = true;
+                }
+            }
+            render();
+        }
+
+        function oceanRestart() {
+            state.oceanStep = 0;
+            state.oceanHp = 3;
+            state.oceanIsGameOver = false;
+            state.oceanIsGameWon = false;
+            state.oceanLog = "Sais de Belém com as velas cheias! Rumo ao Cabo de África contornando tormentas.";
+            playClickSound();
+            render();
+        }
+
+        // GAME C: POETRY
+        const POEMS = [
+            {
+                author: "Luís de Camões",
+                context: "O amor é mistério e doce chama escreveu o mestre de um olho só:",
+                verseLines: [
+                    "Amor é fogo que arde sem se ver,",
+                    "É ferida que dói e não se __________."
+                ],
+                correctAnswer: "sente",
+                options: ["cura", "sente", "vê", "cala"],
+                trivia: "Versos que toda a gente conhece e recita em Portugal."
+            },
+            {
+                author: "Fernando Pessoa",
+                context: "Alertando o bardo das letras a mirar nos mais luminosos horizontes:",
+                verseLines: [
+                    "Tudo vale a pena",
+                    "Se a alma não for __________."
+                ],
+                correctAnswer: "pequena",
+                options: ["escura", "cansada", "pequena", "zangada"],
+                trivia: "Do livro lendário 'Mensagem', Pessoa ensina a amar novos horizontes."
+            }
+        ];
+
+        function renderPoetryGame() {
+            const current = POEMS[state.poetryPoemIdx];
+
+            let optionsHtml = current.options.map(word => `
+                <button onclick="poetrySelectWord('${word}')" ${state.poetrySolved ? "disabled" : ""} class="px-3.5 py-1.8 rounded-xl text-[10px] md:text-xs font-black border-2 transition-all hover:scale-105 ${
+                    state.poetrySelectedWord === word ? "bg-purple-600 text-white border-purple-700 shadow" : "bg-white border-purple-200 text-purple-950 hover:bg-purple-100/50"
+                }">${word}</button>
+            `).join("");
+
+            let firstLine = current.verseLines[1].split("__________")[0];
+            let ending = current.verseLines[1].split("__________")[1];
+
+            return `
+                <div class="bg-white border-4 border-[#C084FC] rounded-[24px] p-5 space-y-5 shadow-sm">
+                    <div class="flex justify-between items-center text-[10px] font-black text-purple-950 border-b pb-2">
+                        <span>✍️ Enigma Versificado</span>
+                        <span>Sábio: ${current.author}</span>
+                    </div>
+
+                    <p class="text-[10px] md:text-sn text-slate-500 italic text-center font-bold">"${current.context}"</p>
+
+                    <!-- Scroll layout -->
+                    <div class="bg-amber-50/50 border-2 border-amber-200 rounded-2xl p-6 shadow-inner text-center space-y-3 relative overflow-hidden max-w-sm mx-auto select-none font-serif">
+                        <div class="text-[8px] tracking-wider text-amber-700 font-extrabold mb-1">📜 PERGAMINHO MÁGICO</div>
+                        
+                        <p class="text-xs md:text-sm font-bold italic text-slate-800 leading-snug">"${current.verseLines[0]}"</p>
+                        
+                        <p class="text-xs md:text-sm font-bold italic text-slate-800 leading-snug flex justify-center items-center gap-1">
+                            <span>"${firstLine}</span>
+                            <span class="inline-block border-b-2 border-dashed px-3 py-0.5 text-xs font-black bg-white rounded text-purple-700 font-sans">${state.poetrySelectedWord || "???"}</span>
+                            <span>${ending}"</span>
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex gap-2 justify-center flex-wrap">${optionsHtml}</div>
+
+                        <div class="flex justify-center gap-2">
+                            ${!state.poetrySolved ? `
+                                <button onclick="poetryCheckWord()" ${!state.poetrySelectedWord ? "disabled" : ""} class="bg-purple-500 hover:bg-purple-600 border-b-4 border-purple-700 disabled:opacity-50 text-white font-black text-xs py-2 px-6 rounded-lg active:translate-y-0.5 whitespace-nowrap">Provar Rima Real ✍️</button>
+                            ` : `
+                                <div class="space-y-4 w-full">
+                                    <div class="bg-green-50 border border-green-200 p-3.5 rounded-xl text-center text-[11px] text-green-950 font-bold leading-relaxed max-w-xs mx-auto">
+                                        <p>Rima mágica correta e validada! ✨</p>
+                                        <p class="text-[9px] text-slate-500 font-medium italic mt-1">"${current.trivia}"</p>
+                                    </div>
+                                    ${state.poetryPoemIdx === 1 && !achievements.find(a => a.id === "poeta_estrelas")?.unlocked ? `
+                                        <div class="bg-amber-100 border border-amber-300 text-amber-950 font-bold p-2.5 rounded-xl text-[9px] w-max mx-auto text-center">🏆 Conquistaste a Estrela "Poeta das Estrelas" no Armário (+100 XP)!</div>
+                                    ` : ""}
+                                    <button onclick="poetryNextPoem()" class="bg-emerald-600 hover:bg-emerald-700 border-[#075309] border-b-4 text-white text-xs font-black py-2.5 px-6 rounded-xl block mx-auto whitespace-nowrap active:translate-y-0.5">${state.poetryPoemIdx + 1 < POEMS.length ? "Próximo Enigma de Verso" : "Voltar ao Primeiro Pergaminho"}</button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function poetrySelectWord(word) {
+            if (state.poetrySolved) return;
+            state.poetrySelectedWord = word;
+            playClickSound();
+            render();
+        }
+
+        function poetryCheckWord() {
+            const current = POEMS[state.poetryPoemIdx];
+            if (state.poetrySelectedWord === current.correctAnswer) {
+                playSuccessSound();
+                state.poetrySolved = true;
+                if (!state.poetryPointsGiven) {
+                    addPoints(50);
+                    state.poetryPointsGiven = true;
+                }
+                if (state.poetryPoemIdx === 1) {
+                    unlockAchievement("poeta_estrelas");
+                }
+            } else {
+                playFailSound();
+                state.poetrySelectedWord = null;
+            }
+            render();
+        }
+
+        function poetryNextPoem() {
+            if (state.poetryPoemIdx + 1 < POEMS.length) {
+                state.poetryPoemIdx++;
+            } else {
+                state.poetryPoemIdx = 0;
+            }
+            state.poetrySelectedWord = null;
+            state.poetrySolved = false;
+            state.poetryPointsGiven = false;
+            playClickSound();
+            render();
+        }
+
+        // --- SUBVIEW 5: REWARDS ---
+        function renderRewards(parent) {
+            const unlockedCount = achievements.filter(a => a.unlocked).length;
+            const currentLevel = Math.floor(state.points / 100) + 1;
+            const nextLevelPoints = currentLevel * 100;
+            const progressPercent = Math.min(100, ((state.points % 100) / 100) * 100);
+
+            const titles = ["Grão-Vassalo Iniciante", "Fidalgo Aprendiz", "Navegador de Sagres", "Conde de Guimarães", "Duque de Ourique"];
+            const titleTarget = currentLevel >= 5 ? "Duque de Ourique" : titles[currentLevel - 1] || "Grão-Vassalo Iniciante";
+
+            let listHtml = achievements.map((ach, idx) => `
+                <div class="p-3.5 border-4 rounded-[20px] flex gap-3 items-center transition-all ${
+                    ach.unlocked ? "bg-white border-[#046A38] shadow-sm hover:scale-101" : "bg-slate-50 border-slate-200 opacity-55 saturate-50"
+                }">
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center text-2xl shrink-0 shadow-md border-2 border-white ${
+                        ach.unlocked ? ach.badgeColor + " text-white" : "bg-slate-200 text-slate-400"
+                    }">${ach.unlocked ? ach.icon : "🔒"}</div>
+                    <div class="leading-snug">
+                        <div class="flex items-center gap-1">
+                            <h4 class="font-extrabold text-xs text-slate-900 leading-none">${ach.title}</h4>
+                            ${ach.unlocked ? `<span class="bg-green-100 text-[8px] text-green-700 px-1 py-0.2 rounded-full font-bold">OK</span>` : ""}
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-semibold leading-normal mt-0.5">${ach.description}</p>
+                        <span class="inline-block text-[8px] font-black bg-[#FFFBEB] text-[#B45309] px-1.5 py-0.5 rounded border border-[#FFD93D] mt-1">+${ach.points} XP Real</span>
+                    </div>
+                </div>
+            `).join("");
+
+            parent.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Head level box banner -->
+                    <div class="bg-[#FFD93D] rounded-[24px] p-5 text-amber-950 border-4 border-[#B45309] shadow-sm justify-between gap-5 flex flex-col md:flex-row relative overflow-hidden select-none">
+                        <div class="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+                            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center border-4 border-amber-900 text-2xl font-black shrink-0 shadow-sm">${currentLevel}</div>
+                            <div class="leading-tight">
+                                <p class="text-[9px] font-black uppercase text-amber-900 leading-none">Cargos da Coroa lusa</p>
+                                <h2 class="text-base md:text-lg font-black tracking-tight mt-1 text-slate-900">${titleTarget}</h2>
+                                <p class="text-[10px] font-bold mt-1 text-amber-900">🪙 ${state.points} Pontos Reas de Experiência</p>
+                            </div>
+                        </div>
+
+                        <div class="w-full md:w-52 space-y-1.5 shrink-0">
+                            <div class="flex justify-between text-[9px] font-black uppercase">
+                                <span>Lvl ${currentLevel}</span>
+                                <span>Lvl ${currentLevel + 1} (${state.points}/${nextLevelPoints})</span>
+                            </div>
+                            <div class="w-full h-3.5 bg-amber-900/20 rounded-full overflow-hidden p-0.5">
+                                <div class="h-full bg-amber-950 rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <p class="text-center text-[9px] font-black italic text-amber-900">Faltam ${nextLevelPoints - state.points} XP para subir o vosso dote real!</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <!-- Left pane: medals -->
+                        <div class="lg:col-span-7 space-y-4">
+                            <h3 class="text-base font-black text-slate-800 flex items-center gap-2"><span class="text-xl">🏆</span> Cofre de Símbolos (${unlockedCount}/${achievements.length})</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                ${listHtml}
+                            </div>
+                        </div>
+
+                        <!-- Right pane: shield designer -->
+                        <div class="lg:col-span-5 bg-white border-4 border-[#DA291C] rounded-[24px] p-5 space-y-5 shadow-sm relative">
+                            <div class="text-center">
+                                <span class="bg-red-50 text-[#DA291C] font-black border border-red-200 text-[9px] uppercase px-3 py-0.5 rounded-full inline-block">Armaria Cavaleira</span>
+                                <h3 class="font-black text-base text-slate-800 mt-1">Brasão de Armas luso</h3>
+                                <p class="text-[10px] text-slate-500 font-semibold leading-normal">Escolhe o símbolo, muda o teu fundo real e mostra aos heróis no chat de heróis!</p>
+                            </div>
+
+                            <div class="my-3.5 flex justify-center items-center">
+                                <div id="shield-preview" class="w-28 h-36 border-[5px] rounded-t-full rounded-b-[40%] flex flex-col items-center justify-center shadow-md relative transition-all duration-150 ${state.shieldColor}">
+                                    <div id="shield-symbol-view" class="text-5xl animate-pulse">${state.shieldSymbol}</div>
+                                    <span class="absolute bottom-3 text-center w-full px-1.5"><span class="text-[7.5px] font-black uppercase tracking-wider bg-black/30 rounded px-1 text-white select-none">PORTUGAL</span></span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <!-- Title banner -->
+                                <div class="space-y-1 text-xs">
+                                    <label class="text-[9px] font-black uppercase text-slate-400">Nomeie o teu escudo:</label>
+                                    <input type="text" id="shield-write-name" value="${state.shieldName}" class="w-full bg-white border-2 border-slate-200 rounded-lg px-2.5 py-1.2 text-xs font-black text-slate-800 focus:outline-none focus:border-red-400" oninput="rewardsChangeShieldName(this.value)">
+                                </div>
+
+                                <!-- Background select links -->
+                                <div class="space-y-1.5">
+                                    <span class="text-[9px] font-black text-slate-400 uppercase">Fundo Real: <span class="text-[#DA291C]" id="shield-bg-label">${state.shieldBgLabel}</span></span>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button onclick="rewardsChangeBg('bg-[#DA291C] border-[#B45309] text-yellow-300', 'Vermelho Real')" class="w-5 h-5 rounded-full bg-red-600 border-2 border-white ring-1 ring-red-850 hover:scale-105 transition-transform"></button>
+                                        <button onclick="rewardsChangeBg('bg-[#046A38] border-[#166534] text-amber-200', 'Verde Esperança')" class="w-5 h-5 rounded-full bg-emerald-700 border-2 border-white ring-1 ring-emerald-850 hover:scale-105 transition-transform"></button>
+                                        <button onclick="rewardsChangeBg('bg-[#0369A1] border-[#075985] text-yellow-150', 'Azul Marítimo')" class="w-5 h-5 rounded-full bg-sky-700 border-2 border-white ring-1 ring-sky-850 hover:scale-105 transition-transform"></button>
+                                        <button onclick="rewardsChangeBg('bg-[#FFD93D] border-[#B45309] text-amber-950', 'Dourado Império')" class="w-5 h-5 rounded-full bg-amber-400 border-2 border-white ring-1 ring-amber-600 hover:scale-105 transition-transform"></button>
+                                    </div>
+                                </div>
+
+                                <!-- Symbols selection -->
+                                <div class="space-y-1.5">
+                                    <span class="text-[9px] font-black text-slate-400 uppercase">Selo central:</span>
+                                    <div class="flex gap-2.5">
+                                        ${["👑", "⛵", "⚔️", "🏰", "🦉"].map(sym => `
+                                            <button onclick="rewardsChangeSymbol('${sym}')" class="text-xl p-1 bg-white border-2 border-slate-200 hover:scale-110 md:hover:scale-115 rounded-lg transition-transform ${state.shieldSymbol === sym ? "border-[#DA291C] bg-red-50" : ""}">${sym}</button>
+                                        `).join("")}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 text-[9px] font-black text-red-900 border-t border-red-100 bg-red-50/70 -mx-5 -mb-5 p-3 rounded-b-[20px] text-center">🎉 Mostra este brasão de armas no chat para saberes se D. Afonso e a Rainha aprovam as tuas insígnias!</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function rewardsChangeShieldName(val) {
+            state.shieldName = val.substring(0, 32);
+            saveProgress();
+        }
+
+        function rewardsChangeBg(colorClasses, label) {
+            state.shieldColor = colorClasses;
+            state.shieldBgLabel = label;
+            document.getElementById("shield-preview").className = `w-28 h-36 border-[5px] rounded-t-full rounded-b-[40%] flex flex-col items-center justify-center shadow-md relative transition-all duration-150 ${colorClasses}`;
+            document.getElementById("shield-bg-label").innerText = label;
+            playClickSound();
+            saveProgress();
+        }
+
+        function rewardsChangeSymbol(sym) {
+            state.shieldSymbol = sym;
+            document.getElementById("shield-symbol-view").innerText = sym;
+            playClickSound();
+            saveProgress();
+            render();
+        }
+
+        // On Mount setup
+        window.addEventListener("load", () => {
+            loadProgress();
+            changeTab("timeline");
+            // Warm speech voices list fetching
+            if (window.speechSynthesis) {
+                window.speechSynthesis.getVoices();
+            }
+        });
+    </script>
+</body>
+</html>

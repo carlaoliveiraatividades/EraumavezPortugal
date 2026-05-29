@@ -129,14 +129,12 @@ Responde em Português de Portugal (PT-PT) de forma simples, animada e pedagógi
 });
 
 async function startServer() {
-  // Vite integration in development mode
+  // In development, serve the root index.html directly
   if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+    app.use(express.static(process.cwd()));
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(process.cwd(), "index.html"));
     });
-    app.use(vite.middlewares);
   } else {
     // Serve static files in production
     const distPath = path.join(process.cwd(), "dist");
