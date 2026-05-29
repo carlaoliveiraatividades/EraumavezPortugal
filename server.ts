@@ -39,7 +39,7 @@ app.get("/api/health", (req, res) => {
 // API: Character chat connection
 app.post("/api/chat", async (req, res) => {
   try {
-    const { character, prompt, history } = req.body;
+    const { character, prompt, history, studentName, studentAvatar, shieldName, shieldSymbol } = req.body;
     
     if (!prompt) {
       res.status(400).json({ error: "O campo 'prompt' é obrigatório." });
@@ -87,6 +87,13 @@ Mantém as tuas respostas curtas (máximo 4-5 frases) e imaginativas, adequadas 
     } else {
       systemInstruction = `És um simpático Duende do Tempo e do Saber, guardião das memórias de Portugal. 
 Responde em Português de Portugal (PT-PT) de forma simples, animada e pedagógica para crianças de todas as idades.`;
+    }
+
+    if (studentName) {
+      systemInstruction += `\n\nINFORMAÇÃO CONTEXTUAL DO ALUNO COM QUEM ESTÁS A FALAR:
+O nome do aluno é "${studentName}" (ele tem o avatar de personagem "${studentAvatar || "😊"}").
+Ele desenhou um Brasão de Armas para o seu registo de cavalaria com o título "${shieldName || "Escudo Real"}" e o selo central "${shieldSymbol || "🛡️"}".
+Trata o aluno diretamente pelo seu nome próprio "${studentName}" (alternando ou adicionando com os teus pronomes preferidos) para criar uma conexão profunda de professor/rei/guia. Se ele referir o seu próprio brasão ou escudo, faz um comentário bem-humorado, elogioso e encorajador aprovando a escolha do selo ${shieldSymbol}!`;
     }
 
     // Convert past messages into the required chat sequence format if provided
